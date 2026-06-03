@@ -1,0 +1,5 @@
+- [File/media storage backend selection](storage-mode.md) — uploads default to local disk; Replit Object Storage only when STORAGE_MODE=replit (VPS sidecar doesn't exist → 500).
+- [VPS production deployment](vps-production.md) — live app is PM2 `thelawncareworkshop` (npm start) in /var/www/webportals; no dotenv, env sourced at launch so restart needs re-source.
+- [Upload file-type policy](upload-file-policy.md) — uploads gated strictly by extension allowlist (shared in upload.ts), svg excluded (XSS), nosniff on serve; presigned upload is unauth by design.
+- [Image uploads & failure diagnosis](image-uploads.md) — "upload failed/Status:null" = client-side aborts (nginx 499 / 400-0byte), not backend; images auto-convert to compact PNG via sharp (must install on VPS too).
+- [postgres-js db.execute() shape](postgres-js-execute-shape.md) — execute() returns rows as a direct array (not {rows}); .rows leftovers broke Firebase init → false "not configured"; also covers firebase re-init gotcha.

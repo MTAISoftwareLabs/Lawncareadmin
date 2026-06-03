@@ -1,0 +1,439 @@
+Home screen:=>
+  "data": {
+    "expert_corner": [
+      {
+        "id": "art_01",
+        "type": "article",
+        "name": "How to Maintain Healthy Grass",
+        "description": "Expert tips for lawn care throughout the year",
+        "media_url": "https://cdn.app.com/articles/grass.jpg",
+        "created_at": "2026-01-05T10:30:00Z"
+      },
+      {
+        "id": "vid_02",
+        "type": "video",
+        "name": "Lawn Watering Best Practices",
+        "description": "Avoid overwatering and underwatering your lawn",
+        "media_url": "https://cdn.app.com/videos/watering.mp4",
+        "thumbnail_url": "https://cdn.app.com/videos/watering_thumb.jpg",
+        "created_at": "2026-01-04T08:20:00Z"
+      },
+      {
+        "id": "prd_03",
+        "type": "product",
+        "name": "Organic Lawn Starter Kit",
+        "description": "Beginner-friendly lawn care essentials",
+        "media_url": "https://cdn.app.com/products/starter_kit.jpg",
+        "created_at": "2026-01-03T14:10:00Z"
+      }
+    ],
+    "tips_tricks": [
+      {
+        "id": "art_01",
+        "type": "maintenance",
+        "name": "How to Maintain Healthy Grass",
+        "description": "Expert tips for lawn care throughout the year",
+        "media_url": "https://cdn.app.com/articles/grass.jpg",
+        "created_at": "2026-01-05T10:30:00Z"
+      },
+      {
+        "id": "vid_02",
+        "type": "advance",
+        "name": "Lawn Watering Best Practices",
+        "description": "Avoid overwatering and underwatering your lawn",
+        "media_url": "https://cdn.app.com/videos/watering.mp4",
+        "thumbnail_url": "https://cdn.app.com/videos/watering_thumb.jpg",
+        "created_at": "2026-01-04T08:20:00Z"
+      },
+      {
+        "id": "prd_03",
+        "type": "future",
+        "name": "Organic Lawn Starter Kit",
+        "description": "Beginner-friendly lawn care essentials",
+        "media_url": "https://cdn.app.com/products/starter_kit.jpg",
+        "created_at": "2026-01-03T14:10:00Z"
+      }
+    ],
+    "equipments": [
+      {
+        "id": "prd_04",
+        "type": "product",
+        "name": "Electric Lawn Mower",
+        "description": "Low-noise mower suitable for small gardens",
+        "media_url": "https://cdn.app.com/products/mower.jpg",
+        "created_at": "2026-01-04T09:00:00Z"
+      },
+      {
+        "id": "art_05",
+        "type": "article",
+        "name": "Choosing the Right Lawn Equipment",
+        "description": "Guide to selecting tools based on lawn size",
+        "media_url": "https://cdn.app.com/articles/equipment_guide.jpg",
+        "created_at": "2026-01-02T11:45:00Z"
+      },
+      {
+        "id": "vid_06",
+        "type": "video",
+        "name": "How to Use a Lawn Trimmer Properly",
+        "description": "Safety and efficiency tips for trimming",
+        "media_url": "https://cdn.app.com/videos/trimmer.mp4",
+        "thumbnail_url": "https://cdn.app.com/videos/trimmer_thumb.jpg",
+        "created_at": "2026-01-01T16:30:00Z"
+      }
+    ],
+    "fertilizer_herbicide": [
+      {
+        "id": "art_07",
+        "type": "article",
+        "name": "Understanding Lawn Fertilizers",
+        "description": "When and how to fertilize your lawn",
+        "media_url": "https://cdn.app.com/articles/fertilizer.jpg",
+        "created_at": "2026-01-03T09:10:00Z"
+      },
+      {
+        "id": "prd_08",
+        "type": "product",
+        "name": "Organic Weed Control",
+        "description": "Eco-friendly herbicide for home lawns",
+        "media_url": "https://cdn.app.com/products/weed_control.jpg",
+        "created_at": "2026-01-02T13:00:00Z"
+      }
+    ],
+    "soil_water": [
+      {
+        "id": "art_09",
+        "type": "article",
+        "name": "Improving Soil Quality",
+        "description": "How soil health affects lawn growth",
+        "media_url": "https://cdn.app.com/articles/soil.jpg",
+        "created_at": "2026-01-05T07:50:00Z"
+      },
+      {
+        "id": "vid_10",
+        "type": "video",
+        "name": "Soil Testing at Home",
+        "description": "Simple methods to test soil conditions",
+        "media_url": "https://cdn.app.com/videos/soil_testing.mp4",
+        "thumbnail_url": "https://cdn.app.com/videos/soil_testing_thumb.jpg",
+        "created_at": "2026-01-03T15:40:00Z"
+      }
+    ],
+    "insects_disease": [
+      {
+        "id": "art_11",
+        "type": "article",
+        "name": "Common Lawn Pests",
+        "description": "Identify and manage harmful insects",
+        "media_url": "https://cdn.app.com/articles/pests.jpg",
+        "created_at": "2026-01-04T12:15:00Z"
+      },
+      {
+        "id": "vid_12",
+        "type": "video",
+        "name": "Treating Lawn Diseases",
+        "description": "Early signs and treatment methods",
+        "media_url": "https://cdn.app.com/videos/lawn_disease.mp4",
+        "thumbnail_url": "https://cdn.app.com/videos/lawn_disease_thumb.jpg",
+        "created_at": "2026-01-02T18:25:00Z"
+      }
+    ],
+    "deals": [
+      {
+        "id": "deal_01",
+        "title": "20% Off Organic Fertilizer",
+        "link": "https://amzn.to/...",
+        "image_url": "https://cdn.app.com/deals/fert.jpg"
+      }
+    ],
+    "calenders": [
+      {
+        "id": "cal_01",
+        "title": "Kentucky Bluegrass",
+        "image_url": "https://cdn.app.com/calenders/kb_bg.jpg",
+        "route_name": "KentuckyBluegrass",
+        "plans": [
+          { "type": "beginner", "title": "Newbie", "pdf_url": "..." },
+          { "type": "intermediate", "title": "Intermediate", "pdf_url": "..." },
+          { "type": "advanced", "title": "Advance", "pdf_url": "..." }
+        ],
+        "week_events": [
+          {
+            "id": "ev_01",
+            "header": "Early Spring Fertilization",
+            "feature": "Apply pre-emergent herbicide",
+            "date": "2026-03-15",
+            "image_url": "https://cdn.app.com/events/spr_fert.jpg"
+          }
+        ]
+      }
+    ],
+    "self_diagnosis": [
+      {
+        "id": "diag_01",
+        "title": "Do You Have Brown Patches in Your Lawn?",
+        "image_url": "https://cdn.app.com/diagnose/brown_patches.jpg",
+        "questions": [
+          {
+            "id": "Q1",
+            "question": "Are the brown patches circular or have a distinct pattern?",
+            "answers": [
+              { "id": "A1", "text": "Yes", "next_question_id": "Q2" },
+              {
+                "id": "A2",
+                "text": "No, the patches are irregular in shape",
+                "next_question_id": "Q5"
+              }
+            ]
+          },
+          {
+            "id": "Q2",
+            "question": "Do the patches have a smokey ring around the edges?",
+            "answers": [
+              {
+                "id": "A3",
+                "text": "Yes",
+                "diagnosis": {
+                  "title": "Brown Patch Disease (Rhizoctonia)",
+                  "details": [
+                    "Brown Patch thrives in warm, humid conditions.",
+                    "Affected grass blades look water-soaked."
+                  ],
+                  "solution": "Apply a fungicide like Scotts DiseaseEx.",
+                  "affiliate_title": "Scotts DiseaseEx Fungicide",
+                  "affiliate_link": "https://amzn.to/42xX7gx"
+                }
+              },
+              { "id": "A4", "text": "No", "next_question_id": "Q3" }
+            ]
+          }
+        ]
+      }
+    ],
+    "lawn_library": [
+      {
+        "id": "ebk_01",
+        "name": "Cool Season Turfgrass ID",
+        "image_url": "https://cdn.app.com/library/cool_season_id.jpg",
+        "download_url": "https://firebasestorage.googleapis.com/v0/b/lawncare-workshop-aj990c.firebasestorage.app/o/Cool%20Season%20Turfgrass%20ID%20(1).pdf?alt=media&token=b29cb111-3ac5-479c-a9ee-132346ea7ca0"
+      },
+      {
+        "id": "ebk_02",
+        "name": "Introduction to Lawncare",
+        "image_url": "https://cdn.app.com/library/intro_lawncare.jpg",
+        "download_url": "https://firebasestorage.googleapis.com/v0/b/lawncare-workshop-aj990c.firebasestorage.app/o/Introduction%20to%20Lawncare.pdf?alt=media&token=425f8858-f390-4e50-a732-8249a70e079a"
+      },
+      {
+        "id": "ebk_03",
+        "name": "Intermediate Lawn Care Mastery",
+        "image_url": "https://cdn.app.com/library/intermediate_mastery.jpg",
+        "download_url": "https://firebasestorage.googleapis.com/v0/b/lawncare-workshop-aj990c.firebasestorage.app/o/Intermediate%20Lawn%20Care%20Mastery.pdf?alt=media&token=9929f122-739b-4c48-a85a-d7ac48450b60"
+      },
+      {
+        "id": "ebk_04",
+        "name": "Organic Lawn Care Proficiency",
+        "image_url": "https://cdn.app.com/library/organic_proficiency.jpg",
+        "download_url": "https://firebasestorage.googleapis.com/v0/b/lawncare-workshop-aj990c.firebasestorage.app/o/Organic%20Lawn%20Care%20Proficiency.pdf?alt=media&token=25f49af0-c3bc-4826-abf6-37c649474f39"
+      }
+    ]
+  
+}
+lawncare Forum =>
+POST /api/posts:-
+
+{
+  "user_id": "u45",
+  "post_type": "text | image | video",
+  "content": {
+    "text": "My first post",
+    "media_url": "https://..."
+  }
+}
+
+
+----------------
+
+GET /api/posts
+
+{
+  "success": true,
+  "current_page": 1,
+  "total_posts": 120,
+  "data": [
+    {
+      "post_id": "p101",
+      "user_id": "u21",
+      "user_name": "Ali Khan",
+      "user_image": "https://cdn.app.com/users/u21.jpg",
+      "post_type": "text",
+      "content": {
+        "text": "Good morning everyone 🌞"
+      },
+      "total_likes": 18,
+      "total_comments": 4,
+      "created_at": "2026-01-06T08:15:00Z"
+    },
+    {
+      "post_id": "p102",
+      "user_id": "u34",
+      "user_name": "Sara Ahmed",
+      "user_image": "https://cdn.app.com/users/u34.jpg",
+      "post_type": "image",
+      "content": {
+        "media_url": "https://cdn.app.com/posts/images/img_102.jpg",
+        "thumbnail_url": "https://cdn.app.com/posts/images/thumb_102.jpg"
+      },
+      "total_likes": 45,
+      "total_comments": 12,
+      "created_at": "2026-01-06T09:05:00Z"
+    },
+    {
+      "post_id": "p103",
+      "user_id": "u18",
+      "user_name": "Usman Raza",
+      "user_image": "https://cdn.app.com/users/u18.jpg",
+      "post_type": "video",
+      "content": {
+        "media_url": "https://cdn.app.com/posts/videos/video_103.mp4",
+        "thumbnail_url": "https://cdn.app.com/posts/videos/thumb_103.jpg",
+        "duration_seconds": 42
+      },
+      "total_likes": 120,
+      "total_comments": 33,
+      "created_at": "2026-01-06T10:30:00Z"
+    }
+  ]
+}
+
+
+==------------
+
+POST /api/posts/{post_id}/like
+
+{
+  "user_id": "u45"
+}
+
+
+=========
+
+POST /api/posts/{post_id}/comments
+
+
+{
+  "user_id": "u45",
+  "comment_text": "Great post!"
+}
+
+
+====-------
+Get All Comments of a Specific Post:
+GET /api/posts/{post_id}/comments
+{
+  "success": true,
+  "total_comments": 6,
+  "data": [
+    {
+      "comment_id": "c789",
+      "user_id": "u45",
+      "user_name": "Ali Khan",
+      "user_image": "https://...",
+      "comment_text": "Great post!",
+      "created_at": "2026-01-06T11:00:00Z"
+    }
+  ]
+}
+
+
+===================
+
+question_screen =>
+/* 1. [POST] Submit New Question (Ask Expert) */
+// URL: /api/questions/submit
+// Format: multipart/form-data
+{
+  "description": "My grass is turning yellow in circles.", // String (Required)
+  "priority": "High", // Enum: Emergency, High, Medium, Low
+  "image": "binary_file_data" // File (Optional)
+}
+/* 2. [GET] Load Admin Chat History */
+// URL: /api/admin/chat/messages
+{
+  "messages": [
+    {
+      "id": "msg_123",
+      "sender": "user", // "user" or "admin"
+      "text": "Hello Ross, can you help with my lawn?",
+      "image_url": "https://cdn.app.com/q/img_1.jpg", // null if no image
+      "timestamp": "2026-01-07T00:05:00Z"
+    },
+    {
+      "id": "msg_124",
+      "sender": "admin",
+      "text": "Sure! I see the issue in your photo.",
+      "image_url": null,
+      "timestamp": "2026-01-07T00:07:00Z"
+    }
+  ]
+}
+/* 3. [POST] Send Message in Existing Chat */
+// URL: /api/admin/chat/send
+{
+  "text": "What fertilizer should I use?", // String
+  "image_url": null // String (Optional)
+}
+contest screem=> /* 1. [GET] Fetch Contest Main Page Info (Banner) */
+// URL: /api/contest/info
+{
+  "contest_id": "monthly_jan_2026",
+  "contest_title": "Monthly Lawn Contest - January",
+  "banner_image": "https://cdn.app.com/c/banner_jan.jpg", // Contest Main Image
+  "prize_details": "$500 Gift Card + Pro Lawn Kit", // Prize Information
+  "start_date": "2026-01-01T00:00:00Z",
+  "end_date": "2026-01-31T23:59:59Z",
+  "rules_summary": "One entry per household. Recent photos only."
+}
+/* 2. [GET] Fetch Active Contest Entries */
+// URL: /api/contest/entries
+{
+  "entries": [
+    {
+      "id": "entry_001",
+      "title": "My Lush Green Backyard",
+      "description": "I've been using organic mulch for 6 months.",
+      "image_url": "https://cdn.app.com/c/lawn_1.jpg",
+      "votes_count": 42,
+      "is_liked_by_me": true,
+      "user": {
+        "name": "John Doe",
+        "avatar": "https://cdn.app.com/u/john.jpg"
+      }
+    }
+  ]
+}
+/* 3. [POST] Submit New Contest Entry */
+// URL: /api/contest/submit
+// Format: multipart/form-data
+{
+  "title": "Front Yard Paradise", // String (Required)
+  "description": "Weekly mowing and deep watering technique.", // String (Required)
+  "image": "binary_file_data" // File (Required)
+}
+/* 4. [POST] Vote/Like a Contestant */
+// URL: /api/contest/entries/:id/vote
+{
+  "action": "like" // "like" or "unlike"
+}
+/* 5. [GET] Fetch Past Contest Winners */
+// URL: /api/contest/winners
+{
+  "winners": [
+    {
+      "month": "December",
+      "year": "2025",
+      "title": "Winter Greenery",
+      "winner_name": "Jane Smith",
+      "winner_image": "https://cdn.app.com/c/winner_dec.jpg",
+      "description": "How I kept it green in the frost."
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at async NeonHttpPreparedQuery.execute (/home/runner/workspace/node_modules/src/neon-http/session.ts:83:18)
+2026-01-27 22:55:49.60
+8f6236fc
+User
+params: Test,szjsjdbndnb,,all,,1,0,0
+2026-01-27 22:55:49.60
+8f6236fc
+User
+internalQuery: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+severity: 'ERROR',
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at async (/home/runner/workspace/server/routes.ts:2410:28) {
+2026-01-27 22:55:49.60
+8f6236fc
+User
+query: 'insert into "push_notifications" ("id", "title", "body", "image_url", "target_type", "target_user_ids", "sent_at", "sent_by", "success_count", "failure_count", "created_at") values (default, $1, $2, $3, $4, $5, default, $6, $7, $8, default) returning "id", "title", "body", "image_url", "target_type", "target_user_ids", "sent_at", "sent_by", "success_count", "failure_count", "created_at"',
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at NeonHttpPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:73:11)
+2026-01-27 22:55:49.60
+8f6236fc
+User
+cause: NeonDbError: column "sent_at" of relation "push_notifications" does not exist
+2026-01-27 22:55:49.60
+8f6236fc
+User
+file: 'parse_target.c',
+2026-01-27 22:55:49.60
+8f6236fc
+User
+column: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+internalPosition: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+table: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+}
+2026-01-27 22:55:49.60
+8f6236fc
+User
+Push notification error: DrizzleQueryError: Failed query: insert into "push_notifications" ("id", "title", "body", "image_url", "target_type", "target_user_ids", "sent_at", "sent_by", "success_count", "failure_count", "created_at") values (default, $1, $2, $3, $4, $5, default, $6, $7, $8, default) returning "id", "title", "body", "image_url", "target_type", "target_user_ids", "sent_at", "sent_by", "success_count", "failure_count", "created_at"
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at async NeonHttpPreparedQuery.queryWithCache (/home/runner/workspace/node_modules/src/pg-core/session.ts:71:12)
+2026-01-27 22:55:49.60
+8f6236fc
+User
+where: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at dr.execute (file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1298:10)
+2026-01-27 22:55:49.60
+8f6236fc
+User
+constraint: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+code: '42703',
+2026-01-27 22:55:49.60
+8f6236fc
+User
+schema: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+position: '105',
+2026-01-27 22:55:49.60
+8f6236fc
+User
+params: [ 'Test', 'szjsjdbndnb', '', 'all', '', 1, 0, 0 ],
+2026-01-27 22:55:49.60
+8f6236fc
+User
+detail: undefined,
+2026-01-27 22:55:49.60
+8f6236fc
+User
+sourceError: undefined
+2026-01-27 22:55:49.60
+8f6236fc
+User
+}
+2026-01-27 22:55:49.60
+8f6236fc
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-01-27 22:55:49.60
+8f6236fc
+User
+hint: undefined,
+2026-01-27 22:55:49.60
+8f6236fc

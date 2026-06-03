@@ -1,0 +1,104 @@
+2026-02-03 14:22:35.50
+2a8e0fcc
+User
+at async notifyUser (/home/runner/workspace/server/notifications.ts:21:22)
+2026-02-03 14:22:35.50
+2a8e0fcc
+User
+at FirebaseNamespace.initializeApp (/home/runner/workspace/node_modules/firebase-admin/lib/app/firebase-namespace.js:246:30)
+2026-02-03 14:22:35.50
+2a8e0fcc
+User
+🔥 Firebase initialization error: FirebaseAppError: Firebase app named "[DEFAULT]" already exists and initializeApp was invoked with an optional Credential. The SDK cannot confirm the equality of Credential objects with the existing app. Please use getApp or getApps to reuse the existing app instead.
+2026-02-03 14:22:35.50
+2a8e0fcc
+User
+at validateAppOptionsSupportDeepEquals (/home/runner/workspace/node_modules/firebase-admin/lib/app/lifecycle.js:141:15)
+2026-02-03 14:22:35.50
+2a8e0fcc
+User
+🔔 notifyUser errors: [
+2026-02-03 14:23:25.82
+2a8e0fcc
+User
+[REQUEST] GET /api/admin/competitions
+2026-02-03 14:23:38.15
+2a8e0fcc
+User
+🔔 notifyUser: Sending notification to user 1
+2026-02-03 14:23:38.15
+2a8e0fcc
+User
+🔔 notifyChatMessage: sender=4, recipient=1, conversation=2
+2026-02-03 14:23:38.18
+2a8e0fcc
+User
+🔔 notifyUser: Found 1 active devices for user 1
+2026-02-03 14:23:38.18
+2a8e0fcc
+User
+🔥 sendPushNotification called with 1 tokens
+2026-02-03 14:23:38.18
+2a8e0fcc
+User
+🔥 Firebase app not initialized, attempting to initialize...
+2026-02-03 14:23:38.18
+2a8e0fcc
+User
+🔥 Firebase: Starting initialization...
+2026-02-03 14:23:38.21
+2a8e0fcc
+User
+🔥 Firebase: admin_configs table exists, fetching configs...
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+errorInfo: {
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+at async notifyChatMessage (/home/runner/workspace/server/notifications.ts:134:3) {
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+🔔 notifyUser result: 0 success, 1 failed
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+'firebase_web_storage_bucket',
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+'firebase_web_project_id',
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+at validateAppOptionsSupportDeepEquals (/home/runner/workspace/node_modules/firebase-admin/lib/app/lifecycle.js:141:15)
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+'firebase_web_vapid_key'
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+message: 'Firebase app named "[DEFAULT]" already exists and initializeApp was invoked with an optional Credential. The SDK cannot confirm the equality of Credential objects with the existing app. Please use getApp or getApps to reuse the existing app instead.'
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+]
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+at async notifyUser (/home/runner/workspace/server/notifications.ts:21:22)
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+'firebase_service_account',
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2026-02-03 14:23:38.24
+2a8e0fcc
+User
+at FirebaseNamespace.initializeApp (/home/runner/workspace/node_modules/firebase-admin/lib/app/firebase-namespace.js:246:30)

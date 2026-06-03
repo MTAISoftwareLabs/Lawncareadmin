@@ -1,0 +1,3200 @@
+{
+  "info": {
+    "name": "Lawn Care Education Platform API",
+    "description": "Complete API collection for the Lawn Care Education Platform including authentication, payments, content library, forum, competitions, and admin management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "lawn-care-platform-api-v1"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register (Email)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\",\n  \"name\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login (Email)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Phone Login (Request OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/phone-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "phone-login"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"your-session-id-here\",\n  \"otp_code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Social Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"access_token\": \"ya29.a0AfH6SMBx...\",\n  \"provider_user_id\": \"123456789\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"John Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/social-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "social-login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"phone\": \"+1987654321\",\n  \"avatar\": \"https://example.com/new-avatar.jpg\",\n  \"zipCode\": \"54321\",\n  \"isNotificationEnabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Register FCM Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fcm_token\": \"eKz7tY8sR9M:APA91bH...\",\n  \"device_type\": \"ios\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/device",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "device"]
+            }
+          }
+        },
+        {
+          "name": "Get User Devices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "devices"]
+            }
+          }
+        },
+        {
+          "name": "Unregister FCM Device",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fcm_token\": \"eKz7tY8sR9M:APA91bH...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/device",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "device"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments & Subscriptions",
+      "item": [
+        {
+          "name": "Stripe - Get Config",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/config",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "config"]
+            }
+          }
+        },
+        {
+          "name": "Stripe - Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "products"]
+            }
+          }
+        },
+        {
+          "name": "Stripe - Create Checkout Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priceId\": \"price_XYZ789\",\n  \"successUrl\": \"https://yourapp.com/success\",\n  \"cancelUrl\": \"https://yourapp.com/cancel\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/create-checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "create-checkout"]
+            }
+          }
+        },
+        {
+          "name": "Stripe - Create Customer Portal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"returnUrl\": \"https://yourapp.com/account\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/create-portal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "create-portal"]
+            }
+          }
+        },
+        {
+          "name": "Stripe - Get Subscription Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/stripe/subscription-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stripe", "subscription-status"]
+            }
+          }
+        },
+        {
+          "name": "Get Subscription Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription-plans"]
+            }
+          }
+        },
+        {
+          "name": "Get User Subscription",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription"]
+            }
+          }
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription"]
+            }
+          }
+        },
+        {
+          "name": "Create Subscription (v2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": 1,\n  \"paymentMethodId\": \"pm_card_visa\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "create"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "IAP - Verify iOS Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"ios\",\n  \"receipt\": \"MIIbngYJKoZIhvcNAQcCoIIb...\",\n  \"productId\": \"com.yourapp.premium.monthly\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/iap/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "iap", "verify"]
+            }
+          }
+        },
+        {
+          "name": "IAP - Verify Android Receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platform\": \"android\",\n  \"purchaseToken\": \"opaque-token-from-play-store\",\n  \"productId\": \"com.yourapp.premium.monthly\",\n  \"packageName\": \"com.yourapp.lawncare\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/iap/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "iap", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content Library",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/library/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for favorite status"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/library/items?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", "items"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "disabled": true
+                },
+                {
+                  "key": "search_query",
+                  "value": "soil",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Item Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for favorite status"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/library/items/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", "items", "1"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/library/items/1/favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "library", "items", "1", "favorite"]
+            }
+          }
+        },
+        {
+          "name": "Get User Favorites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favorites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorites"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Forum & Community",
+      "item": [
+        {
+          "name": "Get Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for like status"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts?page=1&limit=20&sort_by=newest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "newest",
+                  "description": "newest or popular"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Post",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for like status"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Just started my lawn renovation. Any tips for overseeding?\",\n  \"image_urls\": [\"https://example.com/lawn1.jpg\", \"https://example.com/lawn2.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts"]
+            }
+          }
+        },
+        {
+          "name": "Like/Unlike Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts/1/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts", "1", "like"]
+            }
+          }
+        },
+        {
+          "name": "Get Post Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts/1/comments?page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts", "1", "comments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great question! I recommend doing it in early fall.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/forum/posts/1/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "forum", "posts", "1", "comments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expert Q&A",
+      "item": [
+        {
+          "name": "Get Public Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/expert-questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "expert-questions"]
+            }
+          }
+        },
+        {
+          "name": "Get My Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/expert-questions/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "expert-questions", "my"]
+            }
+          }
+        },
+        {
+          "name": "Submit Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What's the best way to deal with crabgrass?\",\n  \"category\": \"Weed Control\",\n  \"imageUrl\": \"https://example.com/my-lawn.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/expert-questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "expert-questions"]
+            }
+          }
+        },
+        {
+          "name": "Get Questions (Auth User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "questions"]
+            }
+          }
+        },
+        {
+          "name": "Get Public Questions (v2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/questions/public",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "questions", "public"]
+            }
+          }
+        },
+        {
+          "name": "Submit Question (v2)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Why is my lawn turning yellow?\",\n  \"category\": \"Lawn Health\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "questions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Competitions",
+      "item": [
+        {
+          "name": "Get All Competitions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/competitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "competitions"]
+            }
+          }
+        },
+        {
+          "name": "Get Active Competition",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/competitions/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "competitions", "active"]
+            }
+          }
+        },
+        {
+          "name": "Get Competition Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/competitions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "competitions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Past Winners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/competitions/winners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "competitions", "winners"]
+            }
+          }
+        },
+        {
+          "name": "Submit Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageUrl\": \"https://example.com/my-lawn.jpg\",\n  \"caption\": \"My lawn after 6 months of dedicated care\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/competitions/1/entries",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "competitions", "1", "entries"]
+            }
+          }
+        },
+        {
+          "name": "Vote for Entry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/entries/1/vote",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "entries", "1", "vote"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "Get All Lessons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for progress"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "basics",
+                  "disabled": true
+                },
+                {
+                  "key": "grassType",
+                  "value": "1",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Lesson Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for progress"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Recent Lessons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional - for progress"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/recent",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "recent"]
+            }
+          }
+        },
+        {
+          "name": "Update Lesson Progress",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 100,\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lessons/1/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lessons", "1", "progress"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lawn Care",
+      "item": [
+        {
+          "name": "Get Grass Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/grass-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "grass-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Lawn Care Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "description": "Optional"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lawn-care-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lawn-care-plans"]
+            }
+          }
+        },
+        {
+          "name": "Get Upcoming Lawn Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lawn-plans/upcoming",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lawn-plans", "upcoming"]
+            }
+          }
+        },
+        {
+          "name": "Get Lawn Profiles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lawn-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lawn-profiles"]
+            }
+          }
+        },
+        {
+          "name": "Create Lawn Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Backyard\",\n  \"grassTypeId\": 2,\n  \"size\": 3000,\n  \"sunExposure\": \"partial\",\n  \"soilType\": \"loam\",\n  \"irrigationType\": \"drip\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lawn-profiles",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lawn-profiles"]
+            }
+          }
+        },
+        {
+          "name": "Update Lawn Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Front Yard Updated\",\n  \"size\": 2800\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/lawn-profiles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lawn-profiles", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Diagnoses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/diagnoses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diagnoses"]
+            }
+          }
+        },
+        {
+          "name": "Submit Diagnosis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imageUrl\": \"https://example.com/problem-area.jpg\",\n  \"problemType\": \"brown_patches\",\n  \"description\": \"Brown spots appearing in multiple areas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/diagnoses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diagnoses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deals & Content",
+      "item": [
+        {
+          "name": "Get Deals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/deals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "deals"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "fertilizer",
+                  "disabled": true
+                },
+                {
+                  "key": "featured",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Deal Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/deals/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "deals", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/banners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "banners"]
+            }
+          }
+        },
+        {
+          "name": "Get Testimonials",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/testimonials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "testimonials"]
+            }
+          }
+        },
+        {
+          "name": "Get FAQs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/faqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "faqs"]
+            }
+          }
+        },
+        {
+          "name": "Get Blog Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blog"]
+            }
+          }
+        },
+        {
+          "name": "Get Blog Post Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blog/lawn-care-tips",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blog", "lawn-care-tips"]
+            }
+          }
+        },
+        {
+          "name": "Get Site Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/1/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "1", "read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Ban/Unban User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isBanned\": true,\n  \"bannedReason\": \"Violation of community guidelines\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/1/ban",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "1", "ban"]
+            }
+          }
+        },
+        {
+          "name": "Update User Subscription",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subscriptionStatus\": \"premium\",\n  \"subscriptionPlan\": \"yearly\",\n  \"subscriptionExpiresAt\": \"2025-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/1/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "1", "subscription"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/dashboard-stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "dashboard-stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Banners",
+      "item": [
+        {
+          "name": "Get All Banners",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/banners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "banners"]
+            }
+          }
+        },
+        {
+          "name": "Create Banner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer Sale\",\n  \"imageUrl\": \"https://example.com/banner.jpg\",\n  \"redirectUrl\": \"https://example.com/sale\",\n  \"displayOrder\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/banners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "banners"]
+            }
+          }
+        },
+        {
+          "name": "Update Banner",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Sale\",\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/banners/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "banners", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Banner",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/banners/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "banners", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Push Notifications",
+      "item": [
+        {
+          "name": "Get Notification History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/push-notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "push-notifications"]
+            }
+          }
+        },
+        {
+          "name": "Send to All Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Feature Alert!\",\n  \"body\": \"Check out our new competition feature\",\n  \"imageUrl\": \"https://example.com/notification.jpg\",\n  \"targetType\": \"all\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/push-notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "push-notifications"]
+            }
+          }
+        },
+        {
+          "name": "Send to Premium Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Exclusive Content\",\n  \"body\": \"New premium lesson available\",\n  \"targetType\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/push-notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "push-notifications"]
+            }
+          }
+        },
+        {
+          "name": "Send to Specific Users",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Special Offer\",\n  \"body\": \"Exclusive deal just for you\",\n  \"targetType\": \"specific\",\n  \"targetUserIds\": \"1,5,12,25\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/push-notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "push-notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Configs",
+      "item": [
+        {
+          "name": "Get All Configs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/configs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "configs"]
+            }
+          }
+        },
+        {
+          "name": "Create Config",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"configKey\": \"FCM_SERVER_KEY\",\n  \"configValue\": \"AAAA...\",\n  \"configType\": \"string\",\n  \"description\": \"Firebase Cloud Messaging Server Key\",\n  \"isSecret\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/configs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "configs"]
+            }
+          }
+        },
+        {
+          "name": "Update Config",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"configValue\": \"new-value-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/configs/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "configs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Config",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/configs/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "configs", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Library",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lawn Basics\",\n  \"description\": \"Fundamental lawn care knowledge\",\n  \"iconUrl\": \"https://example.com/icons/basics.png\",\n  \"displayOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-categories"]
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Category Name\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-categories", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-categories/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-categories", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-items"]
+            }
+          }
+        },
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": 1,\n  \"title\": \"Understanding Soil pH\",\n  \"summary\": \"Learn how soil pH affects your lawn\",\n  \"contentHtml\": \"<h1>Soil pH Basics</h1><p>Content here...</p>\",\n  \"imageUrl\": \"https://example.com/soil-ph.jpg\",\n  \"isPremium\": false,\n  \"displayOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-items"]
+            }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"isPremium\": true,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-items/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-items", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/library-items/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "library-items", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Forum",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/forum-posts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "forum-posts"]
+            }
+          }
+        },
+        {
+          "name": "Approve/Pin Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isApproved\": true,\n  \"isPinned\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/forum-posts/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "forum-posts", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/forum-posts/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "forum-posts", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Lessons",
+      "item": [
+        {
+          "name": "Get All Lessons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/lessons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "lessons"]
+            }
+          }
+        },
+        {
+          "name": "Create Lesson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Introduction to Lawn Care\",\n  \"description\": \"Learn the basics of maintaining a healthy lawn\",\n  \"videoUrl\": \"https://example.com/video1.mp4\",\n  \"thumbnailUrl\": \"https://example.com/thumb1.jpg\",\n  \"duration\": 480,\n  \"category\": \"basics\",\n  \"isPremium\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/lessons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "lessons"]
+            }
+          }
+        },
+        {
+          "name": "Update Lesson",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Lesson Title\",\n  \"isPremium\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/lessons/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "lessons", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Lesson",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/lessons/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "lessons", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Deals",
+      "item": [
+        {
+          "name": "Get All Deals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/deals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "deals"]
+            }
+          }
+        },
+        {
+          "name": "Create Deal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"20% Off Fertilizer\",\n  \"description\": \"Use code LAWN20 at checkout\",\n  \"imageUrl\": \"https://example.com/deal1.jpg\",\n  \"dealUrl\": \"https://partner.com/deal\",\n  \"discountCode\": \"LAWN20\",\n  \"discountPercent\": 20,\n  \"category\": \"fertilizer\",\n  \"isFeatured\": true,\n  \"isActive\": true,\n  \"expiresAt\": \"2025-01-31T23:59:59.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/deals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "deals"]
+            }
+          }
+        },
+        {
+          "name": "Update Deal",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"30% Off Fertilizer\",\n  \"discountPercent\": 30\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/deals/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "deals", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Deal",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/deals/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "deals", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Plans",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plans"]
+            }
+          }
+        },
+        {
+          "name": "Create Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Spring Renovation Plan\",\n  \"description\": \"Complete spring lawn care schedule\",\n  \"grassTypeId\": 1,\n  \"isPremium\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plans"]
+            }
+          }
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Plan Name\",\n  \"isPremium\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plans", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plans", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Grass Types",
+      "item": [
+        {
+          "name": "Get All Grass Types",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grass-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grass-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Grass Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bermuda Grass\",\n  \"description\": \"Heat-tolerant, drought-resistant warm-season grass\",\n  \"imageUrl\": \"https://example.com/bermuda.jpg\",\n  \"climateZones\": [\"7\", \"8\", \"9\", \"10\"],\n  \"waterNeeds\": \"low\",\n  \"sunRequirement\": \"full\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grass-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grass-types"]
+            }
+          }
+        },
+        {
+          "name": "Update Grass Type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Grass Type\",\n  \"waterNeeds\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grass-types/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grass-types", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Grass Type",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/grass-types/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "grass-types", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Competitions",
+      "item": [
+        {
+          "name": "Get All Competitions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/competitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "competitions"]
+            }
+          }
+        },
+        {
+          "name": "Create Competition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Best Winter Lawn 2024\",\n  \"description\": \"Show off your winter lawn care skills!\",\n  \"prize\": \"$500 Gift Card\",\n  \"prizeImageUrl\": \"https://example.com/prize.jpg\",\n  \"startDate\": \"2024-12-01T00:00:00.000Z\",\n  \"endDate\": \"2024-12-31T23:59:59.000Z\",\n  \"isActive\": true,\n  \"month\": 12,\n  \"year\": 2024\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/competitions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "competitions"]
+            }
+          }
+        },
+        {
+          "name": "Update Competition",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Competition\",\n  \"prize\": \"$1000 Gift Card\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/competitions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "competitions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Competition",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/competitions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "competitions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get All Entries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/entries",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "entries"]
+            }
+          }
+        },
+        {
+          "name": "Update Entry",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isWinner\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/entries/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "entries", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Entry",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/entries/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "entries", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Diagnoses",
+      "item": [
+        {
+          "name": "Get All Diagnoses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/diagnoses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "diagnoses"]
+            }
+          }
+        },
+        {
+          "name": "Update Diagnosis (Respond)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"reviewed\",\n  \"diagnosis\": \"This appears to be grub damage. I recommend applying...\",\n  \"recommendations\": \"Apply beneficial nematodes or grub control product\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/diagnoses/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "diagnoses", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Diagnosis",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/diagnoses/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "diagnoses", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Questions",
+      "item": [
+        {
+          "name": "Get All Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/questions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "questions"]
+            }
+          }
+        },
+        {
+          "name": "Answer Question",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": \"For Bermuda grass, I recommend a high-nitrogen fertilizer...\",\n  \"status\": \"answered\",\n  \"isPublic\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/questions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "questions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Question",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/questions/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "questions", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Testimonials",
+      "item": [
+        {
+          "name": "Get All Testimonials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "testimonials"]
+            }
+          }
+        },
+        {
+          "name": "Create Testimonial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"content\": \"This app transformed my lawn!\",\n  \"rating\": 5,\n  \"avatar\": \"https://example.com/avatar.jpg\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "testimonials"]
+            }
+          }
+        },
+        {
+          "name": "Update Testimonial",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated testimonial content\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonials/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "testimonials", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Testimonial",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonials/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "testimonials", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - FAQs",
+      "item": [
+        {
+          "name": "Get All FAQs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/faqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "faqs"]
+            }
+          }
+        },
+        {
+          "name": "Create FAQ",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"How often should I water my lawn?\",\n  \"answer\": \"Most lawns need about 1-1.5 inches of water per week...\",\n  \"category\": \"watering\",\n  \"displayOrder\": 1,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/faqs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "faqs"]
+            }
+          }
+        },
+        {
+          "name": "Update FAQ",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": \"Updated answer here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/faqs/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "faqs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete FAQ",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/faqs/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "faqs", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Blog",
+      "item": [
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/blog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "blog"]
+            }
+          }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"10 Tips for Winter Lawn Care\",\n  \"slug\": \"winter-lawn-care-tips\",\n  \"excerpt\": \"Keep your lawn healthy during the cold months\",\n  \"content\": \"<h1>Winter Lawn Care</h1><p>Content here...</p>\",\n  \"imageUrl\": \"https://example.com/winter-lawn.jpg\",\n  \"category\": \"seasonal\",\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/blog",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "blog"]
+            }
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Blog Title\",\n  \"isPublished\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/blog/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "blog", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Post",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/blog/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "blog", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Settings",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteName\": \"Lawn Care Pro\",\n  \"contactEmail\": \"support@lawncare.com\",\n  \"maintenanceMode\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "settings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Subscription Plans",
+      "item": [
+        {
+          "name": "Get All Plans",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/subscription-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "subscription-plans"]
+            }
+          }
+        },
+        {
+          "name": "Create Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Monthly\",\n  \"description\": \"Full access to all premium content\",\n  \"price\": 9.99,\n  \"currency\": \"USD\",\n  \"interval\": \"month\",\n  \"stripePriceId\": \"price_XYZ789\",\n  \"features\": [\"Unlimited lessons\", \"Expert Q&A\", \"No ads\"],\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/subscription-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "subscription-plans"]
+            }
+          }
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 12.99,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/subscription-plans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "subscription-plans", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/subscription-plans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "subscription-plans", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Subscriptions",
+      "item": [
+        {
+          "name": "Get All Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "subscriptions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - IAP Purchases",
+      "item": [
+        {
+          "name": "Get All IAP Purchases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/iap-purchases",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "iap-purchases"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

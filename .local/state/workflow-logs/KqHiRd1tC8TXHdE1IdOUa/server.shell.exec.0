@@ -1,0 +1,396 @@
+
+> workspace@1.0.0 dev
+> concurrently "npm run dev:server" "npm run dev:client"
+
+[1G[0K[0m[1][0m 
+[0m[1][0m > workspace@1.0.0 dev:client
+[0m[1][0m > vite
+[0m[1][0m 
+[0m[0][0m 
+[0m[0][0m > workspace@1.0.0 dev:server
+[0m[0][0m > tsx watch server/index.ts
+[0m[0][0m 
+[0m[1][0m 
+[0m[1][0m   [32m[1mVITE[22m v7.1.10[39m  [2mready in [0m[1m165[22m[2m[0m ms[22m
+[0m[1][0m 
+[0m[1][0m   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+[0m[1][0m   [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.0.2:[1m5000[22m/[39m
+[0m[1][0m [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m ✅ Server successfully started
+[0m[0][0m 📍 Host: 0.0.0.0
+[0m[0][0m 🔌 Port: 3000
+[0m[0][0m 🌍 Environment: development
+[0m[0][0m 🏥 Health check: http://0.0.0.0:3000/health
+[0m[0][0m 🛠️  Development mode
+[0m[0][0m 🔗 API endpoints: http://0.0.0.0:3000/api/*
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m 🔄 Running schema migrations...
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "assigned_to" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "last_message_at" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "user_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "admin_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m ✅ Support tickets schema updated
+[0m[0][0m ✅ Schema migrations complete
+[0m[0][0m Checking if database needs seeding...
+[0m[0][0m Database already has data, skipping seed.
+[0m[0][0m ✅ Admin user name verified as "Admin"
+[0m[0][0m Initializing Stripe schema...
+[0m[0][0m ✅ Stripe schema ready
+[0m[0][0m ⚠️  Stripe development connection not configured
+[0m[0][0m ⚠️  Stripe not configured, skipping sync setup
+[0m[0][0m ⚠️  Stripe not configured, app will run without payment features
+[0m[0][0m ✅ Background initialization complete
+[0m[1][0m Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+[0m[1][0m   npx update-browserslist-db@latest
+[0m[1][0m   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[0m[1][0m [2m10:35:45 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:35:45 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [RevenueCat] Webhook rejected: bad Authorization header
+[0m[1][0m [2m10:35:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [RevenueCat] Event INITIAL_PURCHASE for app_user_id=1 product=monthly expires=2030-03-17T17:46:40.000Z
+[0m[0][0m [RevenueCat] User 1 → premium (plan=null, expires=2030-03-17T17:46:40.000Z)
+[0m[1][0m [2m10:35:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [RevenueCat] Event RENEWAL for app_user_id=999999 product=monthly expires=2030-03-17T17:46:40.000Z
+[0m[1][0m [2m10:35:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [RevenueCat] No user with id=999999
+[0m[1][0m [2m10:35:57 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:35:57 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:20 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:20 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:20 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:20 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:44 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:44 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:36:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:37:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:39:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:39:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:39:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:16 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:16 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:18 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:18 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:40:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:09 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:09 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:14 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:41:14 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:56 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:59 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:42:59 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:00 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:00 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:00 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:00 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:43 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:43 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:52 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:43:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [90m10:44:31 AM[39m [96m[tsx][39m [95mchange[39m in [92m./server/objectStorageUpload.ts[39m [33mRestarting...[39m
+[0m[0][0m 
+[0m[0][0m ⚠️  SIGTERM received, shutting down gracefully...
+[0m[1][0m [2m10:44:31 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ✅ Server closed
+[0m[0][0m c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m ✅ Server successfully started
+[0m[0][0m 📍 Host: 0.0.0.0
+[0m[0][0m 🔌 Port: 3000
+[0m[0][0m 🌍 Environment: development
+[0m[0][0m 🏥 Health check: http://0.0.0.0:3000/health
+[0m[0][0m 🛠️  Development mode
+[0m[0][0m 🔗 API endpoints: http://0.0.0.0:3000/api/*
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m 🔄 Running schema migrations...
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "assigned_to" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "last_message_at" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "user_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "admin_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m ✅ Support tickets schema updated
+[0m[0][0m ✅ Schema migrations complete
+[0m[0][0m Checking if database needs seeding...
+[0m[0][0m Database already has data, skipping seed.
+[0m[0][0m ✅ Admin user name verified as "Admin"
+[0m[0][0m Initializing Stripe schema...
+[0m[0][0m ✅ Stripe schema ready
+[0m[0][0m ⚠️  Stripe development connection not configured
+[0m[0][0m ⚠️  Stripe not configured, skipping sync setup
+[0m[0][0m ⚠️  Stripe not configured, app will run without payment features
+[0m[0][0m ✅ Background initialization complete
+[0m[1][0m [2m10:44:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [90m10:44:34 AM[39m [96m[tsx][39m [95mchange[39m in [92m./server/index.ts[39m [33mRestarting...[39m
+[0m[0][0m 
+[0m[0][0m ⚠️  SIGTERM received, shutting down gracefully...
+[0m[0][0m ✅ Server closed
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m ✅ Server successfully started
+[0m[0][0m 📍 Host: 0.0.0.0
+[0m[0][0m 🔌 Port: 3000
+[0m[0][0m 🌍 Environment: development
+[0m[0][0m 🏥 Health check: http://0.0.0.0:3000/health
+[0m[0][0m 🛠️  Development mode
+[0m[0][0m 🔗 API endpoints: http://0.0.0.0:3000/api/*
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m 🔄 Running schema migrations...
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "assigned_to" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "last_message_at" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "user_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "admin_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m ✅ Support tickets schema updated
+[0m[0][0m ✅ Schema migrations complete
+[0m[0][0m Checking if database needs seeding...
+[0m[0][0m Database already has data, skipping seed.
+[0m[0][0m ✅ Admin user name verified as "Admin"
+[0m[0][0m Initializing Stripe schema...
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ✅ Stripe schema ready
+[0m[1][0m [2m10:44:34 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m [90m10:44:35 AM[39m [96m[tsx][39m [95mchange[39m in [92m./server/index.ts[39m [33mRestarting...[39m
+[0m[0][0m 
+[0m[0][0m ⚠️  SIGTERM received, shutting down gracefully...
+[0m[0][0m ✅ Server closed
+[0m[1][0m [2m10:44:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m c
+[0m[1][0m [2m10:44:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m 📁 Local object storage enabled at /home/runner/workspace/uploads-objects
+[0m[1][0m [2m10:44:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m ✅ Server successfully started
+[0m[0][0m 📍 Host: 0.0.0.0
+[0m[0][0m 🔌 Port: 3000
+[0m[0][0m 🌍 Environment: development
+[0m[0][0m 🏥 Health check: http://0.0.0.0:3000/health
+[0m[0][0m 🛠️  Development mode
+[0m[0][0m 🔗 API endpoints: http://0.0.0.0:3000/api/*
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m 🔄 Running schema migrations...
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "assigned_to" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "last_message_at" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "user_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "admin_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m ✅ Support tickets schema updated
+[0m[0][0m ✅ Schema migrations complete
+[0m[0][0m Checking if database needs seeding...
+[0m[0][0m Database already has data, skipping seed.
+[0m[0][0m ✅ Admin user name verified as "Admin"
+[0m[0][0m Initializing Stripe schema...
+[0m[0][0m ✅ Stripe schema ready
+[0m[1][0m [2m10:44:35 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ⚠️  Stripe development connection not configured
+[0m[0][0m ⚠️  Stripe not configured, skipping sync setup
+[0m[0][0m ⚠️  Stripe not configured, app will run without payment features
+[0m[1][0m [2m10:44:36 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ✅ Background initialization complete
+[0m[1][0m [2m10:44:40 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:40 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:48 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:44:48 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:01 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:01 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:12 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:25 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:25 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:28 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:28 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:29 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:29 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:30 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:45:30 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:03 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:03 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:03 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:03 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:22 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:22 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:28 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:28 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:33 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:42 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:42 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:46 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:47:46 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:25 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:25 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:53 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:53 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:54 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:48:54 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:15 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:17 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:50:17 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m

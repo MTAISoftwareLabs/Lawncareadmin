@@ -1,0 +1,109 @@
+Project Instruction: Build “Fingo” – Multi-Service E-Commerce Website
+📌 Overview
+
+Fingo is an all-in-one eCommerce platform offering multiple on-demand services. The website should have a modern, elegant, and intuitive design that represents speed, convenience, and trust.
+
+It will feature 4 primary service modes:
+
+Food – Restaurants & online food ordering.
+
+Grocery – Daily essentials and supermarket items.
+
+Uber (Ride) – Booking cabs and delivery rides.
+
+Home Services – On-demand professionals (electricians, cleaners, plumbers, etc.).
+
+🎯 Objectives
+
+Provide a single unified platform for multiple service categories.
+
+Allow Customers, Vendors/Stores/Restaurants, and Drivers/Delivery Partners to access their respective sections.
+
+Showcase a clean and responsive layout that works seamlessly on desktop and mobile.
+
+🧩 Website Structure
+1. Landing Page
+
+Beautiful hero section with animated illustration or video showing all Fingo services.
+
+Quick navigation buttons to switch between service modes (Food, Grocery, Uber, Home Services).
+
+Short tagline: “Everything you need — delivered by Fingo.”
+
+Prominent Call-to-Action buttons:
+
+“Order Now” (for customers)
+
+“Join as Vendor” (for businesses)
+
+“Join as Driver” (for delivery partners)
+
+2. Customer Section
+
+Login / Signup for customers.
+
+Explore categories (Food, Grocery, etc.) with search and filters.
+
+Add to cart, checkout, and payment integration.
+
+Real-time order tracking.
+
+Ratings and reviews for products or services.
+
+3. Vendor / Store / Restaurant Section
+
+Separate dashboard login for Vendors.
+
+Manage menu or inventory.
+
+Accept / reject customer orders.
+
+Earnings summary and transaction reports.
+
+Profile verification and support system.
+
+4. Driver / Delivery Partner Section
+
+Driver registration and onboarding.
+
+View delivery requests (real-time).
+
+Navigation and delivery tracking integration.
+
+Earnings, completed trips, and withdrawal reports.
+
+🎨 Design Guidelines
+
+Color Palette: Fresh, energetic, and modern (suggested: teal + orange + white).
+
+Typography: Clean sans-serif font like Poppins or Inter.
+
+Style: Flat and minimal with smooth animations.
+
+Icons: Use custom icons for each mode (Food, Grocery, Uber, Home).
+
+UI/UX: Focus on simplicity — make it easy for users to navigate between service types.
+
+⚙️ Technical Notes
+
+Fully responsive (mobile-first design).
+
+Developed using React.js / Next.js or Laravel + Vue.js (frontend flexibility).
+
+Backend with Laravel / Node.js.
+
+Real-time updates using WebSocket or Firebase.
+
+Integrated payment gateways and Google Maps APIs.
+
+📁 Additional Pages
+
+About Us
+
+Contact & Support
+
+FAQ
+
+Privacy Policy / Terms of Use
+
+Blog (optional for SEO)

@@ -1,0 +1,109 @@
+
+> workspace@1.0.0 dev
+> concurrently "npm run dev:server" "npm run dev:client"
+
+[1G[0K[0m[0][0m 
+[0m[0][0m > workspace@1.0.0 dev:server
+[0m[0][0m > tsx watch server/index.ts
+[0m[0][0m 
+[0m[1][0m 
+[0m[1][0m > workspace@1.0.0 dev:client
+[0m[1][0m > vite
+[0m[1][0m 
+[0m[1][0m 
+[0m[1][0m   [32m[1mVITE[22m v7.1.10[39m  [2mready in [0m[1m190[22m[2m[0m ms[22m
+[0m[1][0m 
+[0m[1][0m   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+[0m[1][0m   [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.0.2:[1m5000[22m/[39m
+[0m[1][0m [baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m ✅ Server successfully started
+[0m[0][0m 📍 Host: 0.0.0.0
+[0m[0][0m 🔌 Port: 3000
+[0m[0][0m 🌍 Environment: development
+[0m[0][0m 🏥 Health check: http://0.0.0.0:3000/health
+[0m[0][0m 🛠️  Development mode
+[0m[0][0m 🔗 API endpoints: http://0.0.0.0:3000/api/*
+[0m[0][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0m[0][0m 🔄 Running schema migrations...
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "assigned_to" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "last_message_at" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "user_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m {
+[0m[0][0m   severity_local: [32m'NOTICE'[39m,
+[0m[0][0m   severity: [32m'NOTICE'[39m,
+[0m[0][0m   code: [32m'42701'[39m,
+[0m[0][0m   message: [32m'column "admin_unread" of relation "support_tickets" already exists, skipping'[39m,
+[0m[0][0m   file: [32m'tablecmds.c'[39m,
+[0m[0][0m   line: [32m'7343'[39m,
+[0m[0][0m   routine: [32m'check_for_column_name_collision'[39m
+[0m[0][0m }
+[0m[0][0m ✅ Support tickets schema updated
+[0m[0][0m ✅ Schema migrations complete
+[0m[0][0m Checking if database needs seeding...
+[0m[0][0m Seeding database with initial data...
+[0m[0][0m Created admin user: admin@lawncareworkshop.com / admin123
+[0m[0][0m Created 5 grass types
+[0m[0][0m Created 8 video lessons
+[0m[0][0m Created 7 lawn care plans
+[0m[0][0m Created 4 deals
+[0m[0][0m Created 5 testimonials
+[0m[0][0m Created 6 FAQs
+[0m[0][0m Created 3 blog posts
+[0m[0][0m Created site settings
+[0m[0][0m Created sample competition
+[0m[0][0m Database seeding completed successfully!
+[0m[0][0m ✅ Admin user name verified as "Admin"
+[0m[0][0m Initializing Stripe schema...
+[0m[1][0m Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+[0m[1][0m   npx update-browserslist-db@latest
+[0m[1][0m   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[0m[1][0m [2m10:05:18 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:18 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ✅ Stripe schema ready
+[0m[1][0m [2m10:05:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ⚠️  Stripe development connection not configured
+[0m[0][0m ⚠️  Stripe not configured, skipping sync setup
+[0m[0][0m ⚠️  Stripe not configured, app will run without payment features
+[0m[1][0m [2m10:05:24 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[0][0m ✅ Background initialization complete
+[0m[1][0m [2m10:05:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:32 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:36 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:36 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:38 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:38 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:05:50 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:08:17 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[0m[1][0m [2m10:08:17 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m

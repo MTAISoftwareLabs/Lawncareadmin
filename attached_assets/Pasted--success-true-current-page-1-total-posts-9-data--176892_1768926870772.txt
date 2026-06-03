@@ -1,0 +1,133 @@
+{
+    "success": true,
+    "current_page": 1,
+    "total_posts": 9,
+    "data": [
+        {
+            "post_id": "p9",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "sssss"
+            },
+            "total_likes": 0,
+            "total_comments": 0,
+            "is_liked": false,
+            "created_at": "2026-01-20T16:29:52.406Z"
+        },
+        {
+            "post_id": "p8",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "dsaas"
+            },
+            "total_likes": 0,
+            "total_comments": 1,
+            "is_liked": false,
+            "created_at": "2026-01-20T16:25:47.099Z"
+        },
+        {
+            "post_id": "p7",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "asd"
+            },
+            "total_likes": 0,
+            "total_comments": 1,
+            "is_liked": false,
+            "created_at": "2026-01-20T16:20:09.184Z"
+        },
+        {
+            "post_id": "p6",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "g"
+            },
+            "total_likes": 0,
+            "total_comments": 0,
+            "is_liked": false,
+            "created_at": "2026-01-20T16:06:06.404Z"
+        },
+        {
+            "post_id": "p5",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "ddd"
+            },
+            "total_likes": 0,
+            "total_comments": 0,
+            "is_liked": false,
+            "created_at": "2026-01-20T14:37:48.149Z"
+        },
+        {
+            "post_id": "p4",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "Just started my lawn renovation. Any tips for overseeding?"
+            },
+            "total_likes": 0,
+            "total_comments": 0,
+            "is_liked": false,
+            "created_at": "2026-01-19T13:36:40.008Z"
+        },
+        {
+            "post_id": "p3",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "Just started my lawn renovation. Any tips for overseeding?"
+            },
+            "total_likes": 0,
+            "total_comments": 0,
+            "is_liked": false,
+            "created_at": "2026-01-19T13:34:56.586Z"
+        },
+        {
+            "post_id": "p2",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "Just started my lawn renovation. Any tips for overseeding?"
+            },
+            "total_likes": 1,
+            "total_comments": 0,
+            "is_liked": true,
+            "created_at": "2026-01-19T12:59:52.098Z"
+        },
+        {
+            "post_id": "p1",
+            "user_id": "u3",
+            "user_name": "John ",
+            "user_image": "https://example.com/new-avatar.jpg",
+            "post_type": "text",
+            "content": {
+                "text": "Just started my lawn renovation. Any tips for overseeding?"
+            },
+            "total_likes": 1,
+            "total_comments": 2,
+            "is_liked": true,
+            "created_at": "2026-01-19T11:50:15.883Z"
+        }
+    ]
+} i need image urls inside content

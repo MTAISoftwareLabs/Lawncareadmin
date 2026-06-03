@@ -1,0 +1,496 @@
+{
+    "success": true,
+    "data": {
+        "banners": [
+            {
+                "id": 4,
+                "title": "sda",
+                "image_url": "data:image/jpeg;base64,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",
+                "redirect_url": ""
+            },
+            {
+                "id": 5,
+                "title": "hello ",
+                "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpzUXC7EU2-8qOa1airaDm5Kb5XwyeRQrfrw&s",
+                "redirect_url": ""
+            }
+        ],
+        "expert_corner": [
+            {
+                "id": "art_27",
+                "type": "article",
+                "name": "Ross Turf",
+                "description": "",
+                "media_url": "/uploads/content/content-1769434777383-738486472.jpeg",
+                "created_at": "2026-01-26T13:39:38.787Z"
+            },
+            {
+                "id": "vid_29",
+                "type": "video",
+                "name": "hello ",
+                "description": "helo the future",
+                "media_url": "/uploads/content/content-1769437263290-944639775.mp4",
+                "created_at": "2026-01-26T14:21:17.588Z",
+                "thumbnail_url": "/uploads/content/content-1769437273722-163350641.png"
+            },
+            {
+                "id": "prd_31",
+                "type": "product",
+                "name": "Weed preventer",
+                "description": "Dithiopyr weed preventer",
+                "media_url": "/uploads/content/content-1769643838433-437679603.jpg",
+                "created_at": "2026-01-28T23:35:14.021Z"
+            },
+            {
+                "id": "art_30",
+                "type": "article",
+                "name": "new article",
+                "description": "heres the article",
+                "media_url": "/uploads/content/content-1769643127067-405220090.JPG",
+                "created_at": "2026-01-28T23:32:16.437Z"
+            }
+        ],
+        "tips_tricks": [
+            {
+                "id": "art_14",
+                "type": "future",
+                "name": "ukygj",
+                "description": "ukyjh",
+                "media_url": "/uploads/content/content-1768219379751-472213033.png",
+                "created_at": "2026-01-12T12:03:06.895Z",
+                "thumbnail_url": "/uploads/content/content-1768219370923-880975692.png"
+            }
+        ],
+        "equipments": [
+            {
+                "id": "art_07",
+                "type": "article",
+                "name": "lkkjij",
+                "description": "hgfdjh",
+                "media_url": "/uploads/content/content-1768218697076-810248576.jpg",
+                "created_at": "2026-01-12T11:51:40.915Z"
+            },
+            {
+                "id": "vid_32",
+                "type": "video",
+                "name": "sdaasdadasd",
+                "description": "sdasdadasdafedsfesfwaedzsdc",
+                "media_url": "/uploads/content/content-1769691775239-405406075.mp4",
+                "created_at": "2026-01-29T13:03:08.232Z",
+                "thumbnail_url": "/uploads/content/content-1769691784709-380414663.png"
+            }
+        ],
+        "fertilizer_herbicide": [
+            {
+                "id": "art_16",
+                "type": "article",
+                "name": "ggggggg",
+                "description": "gggggggggg",
+                "media_url": "/uploads/content/content-1768220198252-595069889.png",
+                "created_at": "2026-01-12T12:16:47.283Z",
+                "thumbnail_url": "/uploads/content/content-1768220202799-138181353.png"
+            },
+            {
+                "id": "prd_08",
+                "type": "product",
+                "name": "hgfhg",
+                "description": "yjfhjghf",
+                "media_url": "/uploads/content/content-1768218801846-329075198.jpg",
+                "created_at": "2026-01-12T11:53:25.438Z",
+                "thumbnail_url": "/uploads/content/content-1768220235965-823969771.png"
+            },
+            {
+                "id": "vid_17",
+                "type": "video",
+                "name": "",
+                "description": "",
+                "media_url": "/uploads/content/content-1768224158893-597577558.mp4",
+                "created_at": "2026-01-12T13:22:53.036Z",
+                "thumbnail_url": "/uploads/content/content-1768224168364-158472073.png"
+            }
+        ],
+        "soil_water": [
+            {
+                "id": "art_09",
+                "type": "article",
+                "name": "hgd",
+                "description": "jd",
+                "media_url": "/uploads/content/content-1768218847262-330358303.jpg",
+                "created_at": "2026-01-12T11:54:10.848Z"
+            },
+            {
+                "id": "vid_18",
+                "type": "video",
+                "name": "gff",
+                "description": "gff",
+                "media_url": "/uploads/content/content-1768224237902-721556432.mp4",
+                "created_at": "2026-01-12T13:24:01.913Z",
+                "thumbnail_url": "/uploads/content/content-1768224221869-478437856.png"
+            },
+            {
+                "id": "prd_19",
+                "type": "product",
+                "name": "h",
+                "description": "hgf",
+                "media_url": "/uploads/content/content-1768224257029-588682691.png",
+                "created_at": "2026-01-12T13:24:25.506Z",
+                "thumbnail_url": "/uploads/content/content-1768224262728-156278255.png"
+            }
+        ],
+        "insects_disease": [
+            {
+                "id": "vid_10",
+                "type": "video",
+                "name": "kkkk",
+                "description": "klll",
+                "media_url": "/uploads/content/content-1768218883669-863364084.jpg",
+                "created_at": "2026-01-12T11:54:45.957Z"
+            },
+            {
+                "id": "art_20",
+                "type": "article",
+                "name": "hg",
+                "description": "gf",
+                "media_url": "/uploads/content/content-1768224287812-701311118.png",
+                "created_at": "2026-01-12T13:24:53.880Z",
+                "thumbnail_url": "/uploads/content/content-1768224291349-519732013.png"
+            },
+            {
+                "id": "prd_21",
+                "type": "product",
+                "name": "n",
+                "description": "n",
+                "media_url": "/uploads/content/content-1768224303340-525790535.png",
+                "created_at": "2026-01-12T13:25:09.214Z",
+                "thumbnail_url": "/uploads/content/content-1768224307174-117398157.png"
+            }
+        ],
+        "deals": [
+            {
+                "id": "deal_1",
+                "title": "Scotts Turf Builder 40lb Bag",
+                "link": "https://homedepot.com",
+                "affiliate_link": null,
+                "image_url": null
+            },
+            {
+                "id": "deal_2",
+                "title": "Sun Joe Electric Dethatcher",
+                "link": "https://amazon.com",
+                "affiliate_link": null,
+                "image_url": null
+            },
+            {
+                "id": "deal_3",
+                "title": "Jonathan Green Grass Seed",
+                "link": "https://acehardware.com",
+                "affiliate_link": null,
+                "image_url": null
+            },
+            {
+                "id": "deal_4",
+                "title": "Milorganite Organic Fertilizer",
+                "link": "https://lowes.com",
+                "affiliate_link": null,
+                "image_url": null
+            }
+        ],
+        "calenders": [
+            {
+                "id": "cal_2",
+                "title": "truf",
+                "image_url": "/uploads/content/content-1768464165475-495932122.png",
+                "route_name": "truf",
+                "plans": [
+                    {
+                        "type": "beginner",
+                        "title": "Newbie",
+                        "pdf_url": ""
+                    },
+                    {
+                        "type": "intermediate",
+                        "title": "Intermediate",
+                        "pdf_url": ""
+                    },
+                    {
+                        "type": "advanced",
+                        "title": "Advance",
+                        "pdf_url": "/uploads/ebooks/ebook-1768243339065-56701834.pdf"
+                    }
+                ],
+                "week_events": []
+            },
+            {
+                "id": "cal_5",
+                "title": "Kentucky ",
+                "image_url": "",
+                "route_name": "kentucky",
+                "plans": [
+                    {
+                        "type": "beginner",
+                        "title": "Newbie",
+                        "pdf_url": "/uploads/ebooks/ebook-1769435024307-848148337.pdf"
+                    },
+                    {
+                        "type": "intermediate",
+                        "title": "Intermediate",
+                        "pdf_url": ""
+                    },
+                    {
+                        "type": "advanced",
+                        "title": "Advance",
+                        "pdf_url": ""
+                    }
+                ],
+                "week_events": []
+            },
+            {
+                "id": "cal_6",
+                "title": "TTTF",
+                "image_url": "/uploads/content/content-1769644034026-626113099.JPEG",
+                "route_name": "TurfTypeTallFescue",
+                "plans": [
+                    {
+                        "type": "beginner",
+                        "title": "Newbie",
+                        "pdf_url": "/uploads/ebooks/ebook-1769644055378-154988881.pdf"
+                    },
+                    {
+                        "type": "intermediate",
+                        "title": "Intermediate",
+                        "pdf_url": "/uploads/ebooks/ebook-1769644072735-655115500.pdf"
+                    },
+                    {
+                        "type": "advanced",
+                        "title": "Advance",
+                        "pdf_url": "/uploads/ebooks/ebook-1769644075682-234994976.pdf"
+                    }
+                ],
+                "week_events": []
+            }
+        ],
+        "self_diagnosis": [
+            {
+                "id": "diag_1",
+                "title": "hello",
+                "image_url": "/uploads/content/content-1768467001492-172832353.png",
+                "questions": {
+                    "greeting": "hello",
+                    "response": "hi"
+                }
+            },
+            {
+                "id": "diag_2",
+                "title": "gggg",
+                "image_url": "/uploads/content/content-1768467985167-670270711.jpg",
+                "questions": {
+                    "title": "Category Name",
+                    "questions": [
+                        {
+                            "id": "Q1",
+                            "question": "Does the grass look yellow?",
+                            "answers": [
+                                {
+                                    "text": "Yes",
+                                    "next": "Q2"
+                                },
+                                {
+                                    "text": "No",
+                                    "diagnosis": "Healthy Lawn",
+                                    "details": [
+                                        "Your grass appears to be in good condition.",
+                                        "Maintain current watering schedule."
+                                    ],
+                                    "solution": "Keep up the good work!",
+                                    "link": "View Maintenance Tips",
+                                    "affiliate_link": "https://example.com/tips"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "Q2",
+                            "question": "Is it and area with high traffic?",
+                            "answers": [
+                                {
+                                    "text": "Yes",
+                                    "diagnosis": "Soil Compaction",
+                                    "details": [
+                                        "High foot traffic compresses the soil.",
+                                        "Roots cannot get enough oxygen."
+                                    ],
+                                    "solution": "Aerate the soil and limit traffic.",
+                                    "link": "Get an Aerator",
+                                    "affiliate_link": "https://amzn.to/example"
+                                },
+                                {
+                                    "text": "No",
+                                    "next": "Q3"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "diag_3",
+                "title": "",
+                "image_url": "",
+                "questions": {
+                    "question": "Are the yellow patches appearing in streaks or lines?",
+                    "options": [
+                        {
+                            "answer": "Yes",
+                            "likely_cause": "Likely mowing or fertilizer application issue. Streaky yellowing can happen when fertilizer is applied unevenly or mower blades are dull.",
+                            "solution": "Sharpen mower blades & use a spread calibrator for even fertilizer application.",
+                            "affiliate_link": "https://amzn.to/3NBmdWA"
+                        },
+                        {
+                            "answer": "No",
+                            "next_step": "Go to Q7"
+                        }
+                    ]
+                }
+            }
+        ],
+        "lawn_library": [
+            {
+                "id": "ebk_5",
+                "name": "Introduction to LawnCare",
+                "image_url": "/uploads/content/content-1769376272192-771109640.jpg",
+                "download_url": "/uploads/ebooks/ebook-1769376284174-135924028.pdf"
+            },
+            {
+                "id": "ebk_7",
+                "name": "Organic Lawncare Proficiency ",
+                "image_url": "/uploads/content/content-1769376367156-271255542.jpg",
+                "download_url": "/uploads/ebooks/ebook-1769376377363-248964512.pdf"
+            },
+            {
+                "id": "ebk_4",
+                "name": "Cool Season Turf ID",
+                "image_url": "/uploads/content/content-1769435387263-110445079.jpg",
+                "download_url": "/uploads/ebooks/ebook-1769376142074-249830129.pdf"
+            },
+            {
+                "id": "ebk_6",
+                "name": "Intermediate Lawncare Mastery",
+                "image_url": "/uploads/content/content-1769645127285-829516448.png",
+                "download_url": "/uploads/ebooks/ebook-1769376333237-783173329.pdf"
+            }
+        ],
+        "videos": [
+            {
+                "id": "vid_1",
+                "title": "Introduction to Cool-Season Lawns",
+                "description": "Learn the basics of maintaining cool-season grasses",
+                "video_url": "https://example.com/video1",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Basics",
+                "difficulty": "beginner",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": false,
+                "view_count": 0
+            },
+            {
+                "id": "vid_2",
+                "title": "Understanding Soil Temperature",
+                "description": "How to use soil temperature for optimal lawn treatments",
+                "video_url": "https://example.com/video2",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Science",
+                "difficulty": "intermediate",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": false,
+                "view_count": 0
+            },
+            {
+                "id": "vid_3",
+                "title": "Spring Lawn Revival Guide",
+                "description": "Step-by-step guide to bring your lawn back after winter",
+                "video_url": "https://example.com/video3",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Seasonal",
+                "difficulty": "beginner",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": true,
+                "view_count": 0
+            },
+            {
+                "id": "vid_4",
+                "title": "Proper Mowing Techniques",
+                "description": "Master the art of mowing for a healthier lawn",
+                "video_url": "https://example.com/video4",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Maintenance",
+                "difficulty": "beginner",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": false,
+                "view_count": 0
+            },
+            {
+                "id": "vid_5",
+                "title": "Fertilization Fundamentals",
+                "description": "When and how to fertilize your cool-season lawn",
+                "video_url": "https://example.com/video5",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Nutrition",
+                "difficulty": "intermediate",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": true,
+                "view_count": 0
+            },
+            {
+                "id": "vid_6",
+                "title": "Weed Identification & Control",
+                "description": "Identify common weeds and learn control strategies",
+                "video_url": "https://example.com/video6",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Problem Solving",
+                "difficulty": "intermediate",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": true,
+                "view_count": 0
+            },
+            {
+                "id": "vid_7",
+                "title": "Aeration and Overseeding",
+                "description": "Fall lawn renovation techniques",
+                "video_url": "https://example.com/video7",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Seasonal",
+                "difficulty": "intermediate",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": true,
+                "view_count": 0
+            },
+            {
+                "id": "vid_8",
+                "title": "Disease Prevention",
+                "description": "Protect your lawn from common diseases",
+                "video_url": "https://example.com/video8",
+                "thumbnail_url": null,
+                "duration": null,
+                "category": "Problem Solving",
+                "difficulty": "advanced",
+                "instructor": "TurfguyRoss",
+                "is_pinned": false,
+                "is_premium": true,
+                "view_count": 0
+            }
+        ]
+    }
+}
