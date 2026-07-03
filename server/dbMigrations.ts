@@ -41,4 +41,42 @@ export async function runSchemaMigrations(): Promise<void> {
   }
 
   console.log('✅ Schema migrations complete');
+
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS user_saved_items (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        item_id VARCHAR(255) NOT NULL,
+        section VARCHAR(100),
+        payload JSONB NOT NULL DEFAULT '{}',
+        saved_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        UNIQUE(user_id, item_id)
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_user_saved_items_user ON user_saved_items (user_id)
+    `);
+    console.log('✅ User saved items schema updated');
+  } catch (error: any) {
+    if (!error.message?.includes('already exists')) {
+      console.log('⚠️ User saved items migration:', error.message);
+    }
+  }
+
+  try {
+    await db.execute(sql`
+      ALTER TABLE site_settings
+      ADD COLUMN IF NOT EXISTS hero_image_2 TEXT,
+      ADD COLUMN IF NOT EXISTS hero_button_text VARCHAR(100) DEFAULT 'Start Your 7-Day Free Trial',
+      ADD COLUMN IF NOT EXISTS hero_badge_text VARCHAR(150) DEFAULT 'Built for Cool-Season Lawns',
+      ADD COLUMN IF NOT EXISTS app_store_url TEXT,
+      ADD COLUMN IF NOT EXISTS play_store_url TEXT
+    `);
+    console.log('✅ Site settings schema updated');
+  } catch (error: any) {
+    if (!error.message?.includes('already exists')) {
+      console.log('⚠️ Site settings migration:', error.message);
+    }
+  }
 }

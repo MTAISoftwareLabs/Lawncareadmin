@@ -15,6 +15,8 @@ import {
   Paperclip, Phone, Video, MoreVertical, Search,
   Plus, Check, CheckCheck
 } from "lucide-react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 
 interface Conversation {
   id: number;
@@ -39,7 +41,7 @@ interface Message {
   createdAt: string;
 }
 
-export function ChatPage() {
+export function ChatPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -127,24 +129,24 @@ export function ChatPage() {
 
   if (!currentUserId) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-16 text-center">
+      <PageShell embedded={embedded}>
+        {!embedded && <Navbar />}
+        <PageContainer embedded={embedded} className={embedded ? "py-16 text-center" : ""}>
           <MessageCircle className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
           <h2 className="text-2xl font-bold mb-2">Login Required</h2>
           <p className="text-muted-foreground mb-4">Please login to access your messages</p>
           <Button onClick={() => navigate("/login")} data-testid="button-login">
             Login
           </Button>
-        </div>
-      </div>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-4 h-[calc(100vh-80px)]">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded} className={embedded ? "py-4 h-[calc(100vh-12rem)]" : "py-4 h-[calc(100vh-80px)]"}>
         <div className="flex h-full gap-4">
           <Card className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96`}>
             <CardHeader className="flex-shrink-0">
@@ -395,7 +397,7 @@ export function ChatPage() {
             </Card>
           )}
         </div>
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

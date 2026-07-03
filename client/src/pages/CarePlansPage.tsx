@@ -11,6 +11,8 @@ import {
   ChevronRight, Filter, MapPin, Thermometer,
   CheckCircle
 } from "lucide-react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 
 interface LawnCarePlan {
   id: number;
@@ -36,7 +38,7 @@ interface GrassType {
   description: string | null;
 }
 
-export function CarePlansPage() {
+export function CarePlansPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [selectedSeason, setSelectedSeason] = useState<string>("all");
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [expandedPlan, setExpandedPlan] = useState<number | null>(null);
@@ -96,9 +98,9 @@ export function CarePlansPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Lawn Care Plans</h1>
           <p className="text-muted-foreground">
@@ -274,7 +276,7 @@ export function CarePlansPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

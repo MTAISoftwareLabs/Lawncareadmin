@@ -3,31 +3,45 @@ import { useEffect } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
+import { PUBLIC_TO_MEMBER_REDIRECTS } from "@/lib/premiumAccess";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { LessonsPage } from "./pages/LessonsPage";
-import { DiagnosisPage } from "./pages/DiagnosisPage";
 import { DealsPage } from "./pages/DealsPage";
-import { CompetitionsPage } from "./pages/CompetitionsPage";
-import { ExpertQAPage } from "./pages/ExpertQAPage";
 import { BlogListPage } from "./pages/BlogListPage";
 import { BlogPostPage } from "./pages/BlogPostPage";
 import { HelpCenterPage } from "./pages/HelpCenterPage";
 import { StaticPage } from "./pages/StaticPage";
 import Contact from "./pages/Contact";
 import PricingPage from "./pages/PricingPage";
-import { ForumPage } from "./pages/ForumPage";
-import { ChatPage } from "./pages/ChatPage";
-import { CarePlansPage } from "./pages/CarePlansPage";
-import { LibraryPage } from "./pages/LibraryPage";
-import { SelfDiagnosisPage } from "./pages/SelfDiagnosisPage";
-import { CalendarsPage } from "./pages/CalendarsPage";
-import { GrassTypesPage } from "./pages/GrassTypesPage";
+import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { MemberHomePageRoute } from "./pages/member/MemberHomePage";
+import { MemberSearchPage } from "./pages/member/MemberSearchPage";
+import { ContentSectionPage } from "./pages/member/ContentSectionPage";
+import { AiChatPage } from "./pages/member/AiChatPage";
+import {
+  MemberForumPage,
+  MemberLessonsPage,
+  MemberLibraryPage,
+  MemberCompetitionsPage,
+  MemberExpertQAPage,
+  MemberProfilePage,
+  MemberDealsPage,
+  MemberCalendarsPage,
+  MemberSelfDiagnosisPage,
+  MemberCarePlansPage,
+  MemberGrassTypesPage,
+  MemberChatPage,
+  MemberDiagnosisPage,
+} from "./pages/member/MemberEmbedPages";
+import { MemberNotificationsPage } from "./pages/member/MemberNotificationsPage";
+import { MemberSavedItemsPage } from "./pages/member/MemberSavedItemsPage";
+import { MemberMyContentPage } from "./pages/member/MemberMyContentPage";
+import { MemberProfileSettingsPage } from "./pages/member/MemberProfileSettingsPage";
+import { MemberPrivacyPage, MemberRulesPage } from "./pages/member/MemberPrivacyPage";
 
 import { AdminLogin } from "./pages/admin/AdminLogin";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
@@ -50,6 +64,7 @@ import { AdminLibrary } from "./pages/admin/AdminLibrary";
 import { AdminForum } from "./pages/admin/AdminForum";
 import { AdminConfigManagement } from "./pages/admin/AdminConfigManagement";
 import { AdminEmailSettings } from "./pages/admin/AdminEmailSettings";
+import { AdminIntegrations } from "./pages/admin/AdminIntegrations";
 import { AdminHomeContent } from "./pages/admin/AdminHomeContent";
 import { AdminCalendars } from "./pages/admin/AdminCalendars";
 import { AdminSelfDiagnosis } from "./pages/admin/AdminSelfDiagnosis";
@@ -83,28 +98,50 @@ function App() {
             <Route path="/signup" component={SignupPage} />
             <Route path="/forgot-password" component={ForgotPasswordPage} />
             <Route path="/reset-password/:token" component={ResetPasswordPage} />
-            <Route path="/lessons" component={LessonsPage} />
             <Route path="/deals" component={DealsPage} />
-            <Route path="/competitions" component={CompetitionsPage} />
+            {Object.entries(PUBLIC_TO_MEMBER_REDIRECTS).map(([from, to]) => (
+              <Route key={from} path={from}>
+                <Redirect to={to} />
+              </Route>
+            ))}
             <Route path="/blog" component={BlogListPage} />
             <Route path="/blog/:slug" component={BlogPostPage} />
             <Route path="/help-center" component={HelpCenterPage} />
             <Route path="/contact" component={Contact} />
             <Route path="/pricing" component={PricingPage} />
+            <Route path="/checkout/success" component={CheckoutSuccessPage} />
             <Route path="/page/:slug" component={StaticPage} />
             
+            {/* Member workspace (browser app) */}
+            <Route path="/app" component={MemberHomePageRoute} />
+            <Route path="/app/search" component={MemberSearchPage} />
+            <Route path="/app/section/:section" component={ContentSectionPage} />
+            <Route path="/app/ai" component={AiChatPage} />
+            <Route path="/app/forum" component={MemberForumPage} />
+            <Route path="/app/lessons" component={MemberLessonsPage} />
+            <Route path="/app/library" component={MemberLibraryPage} />
+            <Route path="/app/competitions" component={MemberCompetitionsPage} />
+            <Route path="/app/questions" component={MemberExpertQAPage} />
+            <Route path="/app/profile" component={MemberProfilePage} />
+            <Route path="/app/deals" component={MemberDealsPage} />
+            <Route path="/app/calendars" component={MemberCalendarsPage} />
+            <Route path="/app/self-diagnosis" component={MemberSelfDiagnosisPage} />
+            <Route path="/app/care-plans" component={MemberCarePlansPage} />
+            <Route path="/app/grass-types" component={MemberGrassTypesPage} />
+            <Route path="/app/chat" component={MemberChatPage} />
+            <Route path="/app/diagnosis" component={MemberDiagnosisPage} />
+            <Route path="/app/notifications" component={MemberNotificationsPage} />
+            <Route path="/app/saved" component={MemberSavedItemsPage} />
+            <Route path="/app/my-content" component={MemberMyContentPage} />
+            <Route path="/app/settings" component={MemberProfileSettingsPage} />
+            <Route path="/app/privacy" component={MemberPrivacyPage} />
+            <Route path="/app/rules" component={MemberRulesPage} />
+            <Route path="/dashboard">
+              <Redirect to="/app" />
+            </Route>
+            
             {/* Protected User Routes */}
-            <Route path="/dashboard" component={DashboardPage} />
             <Route path="/profile" component={ProfilePage} />
-            <Route path="/diagnosis" component={DiagnosisPage} />
-            <Route path="/expert-qa" component={ExpertQAPage} />
-            <Route path="/forum" component={ForumPage} />
-            <Route path="/chat" component={ChatPage} />
-            <Route path="/care-plans" component={CarePlansPage} />
-            <Route path="/library" component={LibraryPage} />
-            <Route path="/self-diagnosis" component={SelfDiagnosisPage} />
-            <Route path="/calendars" component={CalendarsPage} />
-            <Route path="/grass-types" component={GrassTypesPage} />
             
             {/* Admin Routes */}
             <Route path="/admin">
@@ -132,6 +169,7 @@ function App() {
             <Route path="/admin/library" component={AdminLibrary} />
             <Route path="/admin/forum" component={AdminForum} />
             <Route path="/admin/config" component={AdminConfigManagement} />
+            <Route path="/admin/integrations" component={AdminIntegrations} />
             <Route path="/admin/email-settings" component={AdminEmailSettings} />
             <Route path="/admin/home-content" component={AdminHomeContent} />
             <Route path="/admin/calendars" component={AdminCalendars} />

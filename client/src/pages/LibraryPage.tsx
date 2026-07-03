@@ -1,4 +1,6 @@
 import { useState } from "react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ interface Ebook {
   createdAt: string;
 }
 
-export function LibraryPage() {
+export function LibraryPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: ebooks = [], isLoading } = useQuery<Ebook[]>({
@@ -31,9 +33,9 @@ export function LibraryPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Lawn Care Library</h1>
           <p className="text-muted-foreground">
@@ -132,8 +134,8 @@ export function LibraryPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }
 

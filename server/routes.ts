@@ -6,6 +6,7 @@ import { convertToMp4, needsConversion } from "./videoConverter";
 import { uploadToObjectStorage } from "./objectStorageUpload";
 import { shouldConvertToPng, convertImageToPng, isBrowserRenderableImage } from "./imageProcessor";
 import { normalizeQaMessage, normalizeChatMessage, absolutizeUrl } from "./mediaUrl";
+import { normalizeHomePayload, normalizeLandingMedia } from "./homeMediaUrls";
 import { 
   users, lawnProfiles, grassTypes, lawnCarePlans, videoLessons, lessonProgress,
   lawnDiagnoses, deals, competitions, competitionEntries, votes, expertQuestions,
@@ -31,8 +32,33 @@ import { eq, and, desc, asc, sql, gte, lte, or, isNull, like } from "drizzle-orm
 import { authMiddleware, optionalAuthMiddleware, generateToken, hashPassword, comparePassword, AuthRequest } from "./auth";
 import { z } from "zod";
 import crypto from "crypto";
-import { getUncachableStripeClient, getStripePublishableKey } from "./stripeClient";
+import { getUncachableStripeClient, getStripePublishableKey, isStripeEnabled } from "./stripeClient";
+import {
+  findPlanByStripePriceId,
+  resolveAppBaseUrl,
+  syncUserFromCheckoutSession,
+} from "./stripeSubscriptionSync";
+import {
+  findActiveCompetition,
+  handleActiveEntries,
+  handleCompetitionEntries,
+  handleContestInfo,
+  handleSubmitActiveEntry,
+  handleSubmitCompetitionEntry,
+  handleToggleVote,
+  handleWinners,
+} from "./competitionService";
 import { isEmailConfigured, sendPasswordResetOtpEmail, sendEmail, verifySmtpConnection } from "./email";
+import { createChatCompletion, AI_SYSTEM_PROMPTS } from "./openai";
+import { isOpenAiConfigured } from "./openaiConfig";
+import { saveAdminConfigKeys, loadAdminConfigKeys, maskSecret, configSource } from "./adminConfigStore";
+import { loadWeatherApiKey, WEATHER_CONFIG_KEYS } from "./weatherConfig";
+import { getStripePriceIdForSlug, STRIPE_CONFIG_KEYS, STRIPE_SECRET_KEYS } from "./stripeConfig";
+import {
+  formatLandingPageSettings,
+  mapAdminLandingPayload,
+  mapLandingToAdminForm,
+} from "./landingPageSettings";
 
 const adminMiddleware = async (req: AuthRequest, res: any, next: any) => {
   try {
@@ -543,6 +569,74 @@ router.post("/api/diagnoses", authMiddleware, async (req: AuthRequest, res) => {
   }
 });
 
+// ==================== AI (mobile + web) ====================
+
+router.post("/api/ai/chat", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
+      return res.status(400).json({ status: false, error: "Prompt is required" });
+    }
+    if (!(await isOpenAiConfigured())) {
+      return res.status(503).json({ status: false, error: "AI service is not configured" });
+    }
+
+    const content = await createChatCompletion(
+      [
+        { role: "system", content: AI_SYSTEM_PROMPTS.turfTalk },
+        { role: "user", content: prompt.trim() },
+      ],
+      1000,
+    );
+
+    res.json({ status: true, data: { content } });
+  } catch (error: any) {
+    const message = error?.message || "";
+    if (message === "OPENAI_NOT_CONFIGURED") {
+      return res.status(503).json({ status: false, error: "AI service is not configured" });
+    }
+    if (message.startsWith("OPENAI_HTTP_")) {
+      const status = parseInt(message.replace("OPENAI_HTTP_", ""), 10);
+      return res.status(502).json({ status: false, error: `AI provider error (${status})` });
+    }
+    console.error("AI chat error:", error);
+    res.status(500).json({ status: false, error: "Failed to get AI response" });
+  }
+});
+
+router.post("/api/ai/refine", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({ status: false, error: "Text is required" });
+    }
+    if (!(await isOpenAiConfigured())) {
+      return res.status(503).json({ status: false, error: "AI service is not configured" });
+    }
+
+    const content = await createChatCompletion(
+      [
+        { role: "system", content: AI_SYSTEM_PROMPTS.refine },
+        { role: "user", content: `Refine this text: ${text.trim()}` },
+      ],
+      300,
+    );
+
+    res.json({ status: true, data: { content } });
+  } catch (error: any) {
+    const message = error?.message || "";
+    if (message === "OPENAI_NOT_CONFIGURED") {
+      return res.status(503).json({ status: false, error: "AI service is not configured" });
+    }
+    if (message.startsWith("OPENAI_HTTP_")) {
+      const status = parseInt(message.replace("OPENAI_HTTP_", ""), 10);
+      return res.status(502).json({ status: false, error: `AI provider error (${status})` });
+    }
+    console.error("AI refine error:", error);
+    res.status(500).json({ status: false, error: "Failed to refine text" });
+  }
+});
+
 // ==================== DEALS ====================
 
 router.get("/api/deals", async (req, res) => {
@@ -570,7 +664,7 @@ router.get("/api/deals", async (req, res) => {
     // Map field names for mobile app compatibility (image -> imageUrl)
     const formattedDeals = dealsList.map(deal => ({
       ...deal,
-      imageUrl: deal.image,
+      imageUrl: absolutizeUrl(req, deal.image),
       affiliate_link: deal.affiliateLink,
       start_date: deal.startDate,
       expires_at: deal.expiresAt
@@ -778,58 +872,17 @@ router.get("/api/competitions", async (req, res) => {
 
 router.get("/api/competitions/active", async (req, res) => {
   try {
-    const now = new Date();
-    const [activeComp] = await db.select().from(competitions)
-      .where(and(
-        eq(competitions.isActive, true),
-        lte(competitions.startDate, now),
-        gte(competitions.endDate, now)
-      ))
-      .orderBy(desc(competitions.startDate))
-      .limit(1);
-    
-    if (!activeComp) {
-      const [upcomingComp] = await db.select().from(competitions)
-        .where(eq(competitions.isActive, true))
-        .orderBy(desc(competitions.startDate))
-        .limit(1);
-      return res.json(upcomingComp || null);
-    }
-    
+    const activeComp = await findActiveCompetition();
     res.json(activeComp);
   } catch (error) {
     res.status(500).json({ error: "Failed to get active competition" });
   }
 });
 
-router.get("/api/competitions/winners", async (req, res) => {
-  try {
-    const winningEntries = await db.select()
-      .from(competitionEntries)
-      .where(or(
-        eq(competitionEntries.rank, 1),
-        eq(competitionEntries.isWinner, true)
-      ))
-      .limit(6);
-    
-    if (!winningEntries || winningEntries.length === 0) {
-      return res.json([]);
-    }
-    
-    const winners = await Promise.all(winningEntries.map(async (entry) => {
-      const [user] = await db.select({ id: users.id, name: users.name, avatar: users.avatar })
-        .from(users).where(eq(users.id, entry.userId));
-      const [comp] = await db.select({ id: competitions.id, title: competitions.title, month: competitions.month, year: competitions.year })
-        .from(competitions).where(eq(competitions.id, entry.competitionId));
-      return { entry, user, competition: comp };
-    }));
-    
-    res.json(winners);
-  } catch (error) {
-    console.error("Error getting competition winners:", error);
-    res.json([]);
-  }
-});
+router.get("/api/competitions/active/entries", optionalAuthMiddleware, handleActiveEntries);
+router.post("/api/competitions/active/entries", authMiddleware, handleSubmitActiveEntry);
+
+router.get("/api/competitions/winners", handleWinners);
 
 router.get("/api/competitions/:id", async (req, res) => {
   try {
@@ -854,181 +907,14 @@ router.get("/api/competitions/:id", async (req, res) => {
   }
 });
 
-router.get("/api/competitions/:id/entries", optionalAuthMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    const { page = "1" } = req.query;
-    const pageNum = parseInt(page as string);
-    const limit = 20;
-    const offset = (pageNum - 1) * limit;
-    
-    const entries = await db.select({
-      entry: competitionEntries,
-      user: { id: users.id, name: users.name, avatar: users.avatar }
-    }).from(competitionEntries)
-      .leftJoin(users, eq(competitionEntries.userId, users.id))
-      .where(and(eq(competitionEntries.competitionId, parseInt(id)), eq(competitionEntries.status, "approved")))
-      .orderBy(desc(competitionEntries.votes))
-      .limit(limit)
-      .offset(offset);
-    
-    const formattedEntries = await Promise.all(entries.map(async (e) => {
-      let hasVoted = false;
-      if (req.userId) {
-        const voteCheck = await db.select().from(votes)
-          .where(and(eq(votes.userId, req.userId), eq(votes.entryId, e.entry.id)));
-        hasVoted = voteCheck.length > 0;
-      }
-      
-      return {
-        id: e.entry.id,
-        title: e.entry.title,
-        description: e.entry.description,
-        imageUrl: e.entry.imageUrl,
-        beforeImageUrl: e.entry.beforeImageUrl,
-        votes: e.entry.votes,
-        hasVoted,
-        user: e.user,
-        createdAt: e.entry.createdAt
-      };
-    }));
-    
-    res.json({ status: true, data: formattedEntries, page: pageNum });
-  } catch (error) {
-    console.error("Error getting competition entries:", error);
-    res.status(500).json({ status: false, error: "Failed to get entries" });
-  }
-});
+router.get("/api/competitions/:id/entries", optionalAuthMiddleware, handleCompetitionEntries);
 
-// Submit entry to the currently active competition (no ID needed)
-router.post("/api/contest/entries", authMiddleware, async (req: AuthRequest, res) => {
-  try {
-    // Find the active competition automatically
-    const [competition] = await db.select().from(competitions)
-      .where(and(
-        eq(competitions.status, "active"),
-        eq(competitions.isActive, true)
-      ))
-      .orderBy(desc(competitions.createdAt))
-      .limit(1);
-    
-    if (!competition) {
-      return res.status(404).json({ status: false, error: "No active competition found" });
-    }
-    
-    const { title, description, imageUrl, beforeImageUrl } = req.body;
-    
-    if (!imageUrl) {
-      return res.status(400).json({ status: false, error: "Image URL is required" });
-    }
-    
-    const [entry] = await db.insert(competitionEntries).values({
-      competitionId: competition.id,
-      userId: req.userId!,
-      title,
-      description,
-      imageUrl,
-      beforeImageUrl,
-      status: "approved"
-    }).returning();
-    
-    res.json({ status: true, message: "Entry submitted successfully", data: entry });
-  } catch (error) {
-    console.error("Submit entry error:", error);
-    res.status(500).json({ status: false, error: "Failed to submit entry" });
-  }
-});
+router.post("/api/contest/entries", authMiddleware, handleSubmitActiveEntry);
+router.post("/api/competitions/:id/entries", authMiddleware, handleSubmitCompetitionEntry);
 
-router.post("/api/competitions/:id/entries", authMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const { id } = req.params;
-    const competitionId = parseInt(id);
-    
-    console.log(`POST /api/competitions/${competitionId}/entries - User: ${req.userId}`);
-    
-    // Check if competition exists
-    const [competition] = await db.select().from(competitions).where(eq(competitions.id, competitionId));
-    console.log("Competition found:", competition ? competition.title : "NOT FOUND");
-    
-    if (!competition) {
-      return res.status(404).json({ status: false, error: "Competition not found" });
-    }
-    
-    // Check if competition accepts entries (active or upcoming)
-    if (competition.status !== "active" && competition.status !== "upcoming") {
-      return res.status(400).json({ status: false, error: `Competition is ${competition.status}, entries are only accepted for active or upcoming competitions` });
-    }
-    
-    const { title, description, imageUrl, beforeImageUrl } = req.body;
-    
-    if (!imageUrl) {
-      return res.status(400).json({ status: false, error: "Image URL is required" });
-    }
-    
-    const [entry] = await db.insert(competitionEntries).values({
-      competitionId,
-      userId: req.userId!,
-      title,
-      description,
-      imageUrl,
-      beforeImageUrl,
-      status: "approved"
-    }).returning();
-    
-    res.json({ status: true, message: "Entry submitted successfully", data: entry });
-  } catch (error) {
-    console.error("Submit entry error:", error);
-    res.status(500).json({ status: false, error: "Failed to submit entry" });
-  }
-});
-
-// Vote/Like toggle for competition entries - POST /api/entries/:id/vote
-router.post("/api/entries/:id/vote", authMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const entryId = parseInt(req.params.id);
-    const userId = req.userId!;
-    
-    // Check if user already voted
-    const [existingVote] = await db.select().from(votes)
-      .where(and(eq(votes.userId, userId), eq(votes.entryId, entryId)));
-    
-    if (existingVote) {
-      // Remove vote (toggle off)
-      await db.delete(votes)
-        .where(and(eq(votes.userId, userId), eq(votes.entryId, entryId)));
-      
-      const [entry] = await db.update(competitionEntries)
-        .set({ votes: sql`GREATEST(${competitionEntries.votes} - 1, 0)` })
-        .where(eq(competitionEntries.id, entryId))
-        .returning();
-      
-      res.json({ 
-        success: true,
-        voted: false, 
-        votes: entry.votes,
-        message: "Vote removed"
-      });
-    } else {
-      // Add vote (toggle on)
-      await db.insert(votes).values({ userId, entryId });
-      
-      const [entry] = await db.update(competitionEntries)
-        .set({ votes: sql`${competitionEntries.votes} + 1` })
-        .where(eq(competitionEntries.id, entryId))
-        .returning();
-      
-      res.json({ 
-        success: true,
-        voted: true, 
-        votes: entry.votes,
-        message: "Vote added"
-      });
-    }
-  } catch (error) {
-    console.error("Error voting:", error);
-    res.status(500).json({ error: "Failed to vote" });
-  }
-});
+router.post("/api/competitions/entries/:id/vote", authMiddleware, handleToggleVote);
+router.post("/api/contest/entries/:id/vote", authMiddleware, handleToggleVote);
+router.post("/api/entries/:id/vote", authMiddleware, handleToggleVote);
 
 // ==================== EXPERT Q&A ====================
 
@@ -1295,13 +1181,18 @@ router.get("/api/blog/:slug", async (req, res) => {
 
 router.get("/api/notifications", authMiddleware, async (req: AuthRequest, res) => {
   try {
+    const includeRead = req.query.all === "true";
     const notifs = await db.select().from(notifications)
-      .where(and(
-        or(eq(notifications.userId, req.userId!), eq(notifications.isGlobal, true)),
-        eq(notifications.isRead, false)
-      ))
+      .where(
+        includeRead
+          ? or(eq(notifications.userId, req.userId!), eq(notifications.isGlobal, true))
+          : and(
+              or(eq(notifications.userId, req.userId!), eq(notifications.isGlobal, true)),
+              eq(notifications.isRead, false),
+            ),
+      )
       .orderBy(desc(notifications.createdAt))
-      .limit(50);
+      .limit(includeRead ? 100 : 50);
     
     const formattedNotifs = notifs.map(n => ({
       id: n.id,
@@ -1381,17 +1272,42 @@ router.post("/api/notifications/:id/read", authMiddleware, async (req: AuthReque
 router.get("/api/settings", async (req, res) => {
   try {
     const [settings] = await db.select().from(siteSettings).limit(1);
-    res.json(settings || {
-      siteName: "Lawncare Workshop",
-      tagline: "Professional lawncare guidance",
-      heroTitle: "Master Your Lawn With Confidence",
-      heroSubtitle: "Professional lawn care guidance built for cool-season lawns",
-      primaryColor: "#22c55e",
-      monthlyPrice: "9.99",
-      yearlyPrice: "89.99"
-    });
+    res.json(formatLandingPageSettings(settings));
   } catch (error) {
     res.status(500).json({ error: "Failed to get settings" });
+  }
+});
+
+router.get("/api/settings/landing-page", async (req, res) => {
+  try {
+    const [settings] = await db.select().from(siteSettings).limit(1);
+    const formatted = formatLandingPageSettings(settings);
+    res.json(normalizeLandingMedia(req, formatted as unknown as Record<string, unknown>));
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get landing page settings" });
+  }
+});
+
+router.put("/api/admin/settings/landing-page", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const mapped = mapAdminLandingPayload(req.body);
+    const existing = await db.select().from(siteSettings).limit(1);
+
+    let saved;
+    if (existing.length > 0) {
+      [saved] = await db
+        .update(siteSettings)
+        .set(mapped)
+        .where(eq(siteSettings.id, existing[0].id))
+        .returning();
+    } else {
+      [saved] = await db.insert(siteSettings).values(mapped).returning();
+    }
+
+    res.json(mapLandingToAdminForm(formatLandingPageSettings(saved)));
+  } catch (error) {
+    console.error("Error updating landing page settings:", error);
+    res.status(500).json({ error: "Failed to update landing page settings" });
   }
 });
 
@@ -2402,7 +2318,13 @@ router.get("/api/banners", async (req, res) => {
       return true;
     });
     
-    res.json({ status: true, data: filtered });
+    res.json({
+      status: true,
+      data: filtered.map((b) => ({
+        ...b,
+        imageUrl: absolutizeUrl(req, b.imageUrl),
+      })),
+    });
   } catch (error) {
     res.status(500).json({ status: false, error: "Failed to get banners" });
   }
@@ -2558,6 +2480,129 @@ router.get("/api/favorites", authMiddleware, async (req: AuthRequest, res) => {
     res.json({ status: true, data: { library: items } });
   } catch (error) {
     res.status(500).json({ status: false, error: "Failed to get favorites" });
+  }
+});
+
+// ==================== USER SAVED ITEMS (home content bookmarks) ====================
+
+router.get("/api/user/saved-items", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const rows = await db.execute(sql`
+      SELECT item_id, section, payload, saved_at
+      FROM user_saved_items
+      WHERE user_id = ${req.userId!}
+      ORDER BY saved_at DESC
+    `);
+    const items = (rows as any[]).map((row) => ({
+      ...(typeof row.payload === "object" ? row.payload : {}),
+      section: row.section ?? undefined,
+      savedAt: row.saved_at,
+    }));
+    res.json({ status: true, data: items });
+  } catch (error) {
+    console.error("Get saved items error:", error);
+    res.status(500).json({ status: false, error: "Failed to get saved items" });
+  }
+});
+
+router.put("/api/user/saved-items", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { item, section } = req.body ?? {};
+    if (!item?.id) {
+      return res.status(400).json({ status: false, error: "item.id is required" });
+    }
+
+    const existing = await db.execute(sql`
+      SELECT id FROM user_saved_items
+      WHERE user_id = ${req.userId!} AND item_id = ${String(item.id)}
+      LIMIT 1
+    `);
+
+    if ((existing as any[]).length > 0) {
+      await db.execute(sql`
+        DELETE FROM user_saved_items
+        WHERE user_id = ${req.userId!} AND item_id = ${String(item.id)}
+      `);
+      return res.json({ status: true, saved: false, message: "Removed from saved items" });
+    }
+
+    const payload = JSON.stringify({
+      id: String(item.id),
+      type: item.type ?? "article",
+      name: item.name ?? "",
+      description: item.description ?? null,
+      media_url: item.media_url ?? null,
+      thumbnail_url: item.thumbnail_url ?? null,
+      product_link: item.product_link ?? null,
+    });
+
+    await db.execute(sql`
+      INSERT INTO user_saved_items (user_id, item_id, section, payload)
+      VALUES (${req.userId!}, ${String(item.id)}, ${section ?? null}, ${payload}::jsonb)
+      ON CONFLICT (user_id, item_id) DO UPDATE
+      SET section = EXCLUDED.section,
+          payload = EXCLUDED.payload,
+          saved_at = NOW()
+    `);
+
+    res.json({ status: true, saved: true, message: "Item saved" });
+  } catch (error) {
+    console.error("Toggle saved item error:", error);
+    res.status(500).json({ status: false, error: "Failed to update saved item" });
+  }
+});
+
+router.delete("/api/user/saved-items/:itemId", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { itemId } = req.params;
+    await db.execute(sql`
+      DELETE FROM user_saved_items
+      WHERE user_id = ${req.userId!} AND item_id = ${itemId}
+    `);
+    res.json({ status: true, message: "Removed" });
+  } catch (error) {
+    res.status(500).json({ status: false, error: "Failed to remove saved item" });
+  }
+});
+
+router.post("/api/user/saved-items/sync", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const localItems: Array<{ id: string; section?: string; savedAt?: string; [key: string]: unknown }> =
+      Array.isArray(req.body?.items) ? req.body.items : [];
+
+    for (const item of localItems) {
+      if (!item?.id) continue;
+      const payload = JSON.stringify({
+        id: String(item.id),
+        type: item.type ?? "article",
+        name: item.name ?? "",
+        description: item.description ?? null,
+        media_url: item.media_url ?? null,
+        thumbnail_url: item.thumbnail_url ?? null,
+        product_link: item.product_link ?? null,
+      });
+      await db.execute(sql`
+        INSERT INTO user_saved_items (user_id, item_id, section, payload)
+        VALUES (${req.userId!}, ${String(item.id)}, ${item.section ?? null}, ${payload}::jsonb)
+        ON CONFLICT (user_id, item_id) DO NOTHING
+      `);
+    }
+
+    const rows = await db.execute(sql`
+      SELECT item_id, section, payload, saved_at
+      FROM user_saved_items
+      WHERE user_id = ${req.userId!}
+      ORDER BY saved_at DESC
+    `);
+    const items = (rows as any[]).map((row) => ({
+      ...(typeof row.payload === "object" ? row.payload : {}),
+      section: row.section ?? undefined,
+      savedAt: row.saved_at,
+    }));
+    res.json({ status: true, data: items });
+  } catch (error) {
+    console.error("Sync saved items error:", error);
+    res.status(500).json({ status: false, error: "Failed to sync saved items" });
   }
 });
 
@@ -3785,9 +3830,90 @@ router.get("/api/admin/dashboard-stats", authMiddleware, adminMiddleware, async 
 router.get("/api/stripe/config", async (req, res) => {
   try {
     const publishableKey = await getStripePublishableKey();
-    res.json({ publishableKey });
+    res.json({
+      publishableKey,
+      enabled: isStripeEnabled() && !!publishableKey,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to get Stripe config" });
+  }
+});
+
+router.get("/api/stripe/plans", async (req, res) => {
+  try {
+    const plans = await db
+      .select()
+      .from(subscriptionPlans)
+      .where(eq(subscriptionPlans.isActive, true))
+      .orderBy(asc(subscriptionPlans.displayOrder));
+
+    const checkoutPlans = (
+      await Promise.all(
+        plans.map(async (plan) => ({
+          ...plan,
+          stripePriceId:
+            plan.stripePriceId || (await getStripePriceIdForSlug(plan.slug)) || null,
+        })),
+      )
+    ).filter((plan) => plan.stripePriceId);
+
+    if (checkoutPlans.length > 0) {
+      return res.json(checkoutPlans);
+    }
+
+    const monthlyPriceId = await getStripePriceIdForSlug("monthly");
+    const yearlyPriceId = await getStripePriceIdForSlug("yearly");
+
+    const fallback = [
+      {
+        id: 0,
+        name: "Monthly",
+        slug: "monthly",
+        description: "Perfect for trying out all premium features",
+        price: "9.99",
+        currency: "USD",
+        intervalType: "month",
+        intervalCount: 1,
+        trialDays: 7,
+        stripePriceId: monthlyPriceId ?? null,
+        features: JSON.stringify([
+          "Personalized lawn care plans",
+          "All video lessons library",
+          "AI-powered lawn diagnosis",
+          "Expert Q&A access",
+          "Monthly competition entry",
+          "Exclusive deals & discounts",
+        ]),
+        isActive: true,
+        displayOrder: 1,
+      },
+      {
+        id: 0,
+        name: "Yearly",
+        slug: "yearly",
+        description: "Best value - save over 25%",
+        price: "89.99",
+        currency: "USD",
+        intervalType: "year",
+        intervalCount: 1,
+        trialDays: 7,
+        stripePriceId: yearlyPriceId ?? null,
+        features: JSON.stringify([
+          "Everything in Monthly",
+          "2 months FREE",
+          "Priority expert support",
+          "Early access to new features",
+          "Exclusive seasonal guides",
+        ]),
+        isActive: true,
+        displayOrder: 2,
+      },
+    ].filter((plan) => plan.stripePriceId);
+
+    res.json(fallback);
+  } catch (error) {
+    console.error("Error fetching Stripe plans:", error);
+    res.status(500).json({ error: "Failed to get plans" });
   }
 });
 
@@ -3818,9 +3944,13 @@ router.get("/api/stripe/products", async (req, res) => {
 
 router.post("/api/stripe/create-checkout", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const { priceId } = req.body;
+    const { priceId, successUrl, cancelUrl } = req.body;
+    if (!priceId) {
+      return res.status(400).json({ error: "priceId is required" });
+    }
+
     const stripe = await getUncachableStripeClient();
-    if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
+    if (!stripe) return res.status(503).json({ error: "Stripe is not configured on this server" });
     
     const [user] = await db.select().from(users).where(eq(users.id, req.userId!));
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -3829,44 +3959,83 @@ router.post("/api/stripe/create-checkout", authMiddleware, async (req: AuthReque
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
-        metadata: { userId: user.id.toString() }
+        name: user.name,
+        metadata: { userId: user.id.toString() },
       });
       customerId = customer.id;
       await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, user.id));
     }
-    
-    const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+
+    const baseUrl = resolveAppBaseUrl(req);
+    const plan = await findPlanByStripePriceId(priceId);
+    const trialDays = plan && "trialDays" in plan ? plan.trialDays ?? 7 : 7;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: 'subscription',
-      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/pricing`,
+      mode: "subscription",
+      allow_promotion_codes: true,
+      success_url:
+        successUrl ||
+        `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${baseUrl}/pricing`,
+      metadata: { userId: user.id.toString() },
+      subscription_data: {
+        metadata: { userId: user.id.toString() },
+        ...(trialDays > 0 ? { trial_period_days: trialDays } : {}),
+      },
     });
     
-    res.json({ url: session.url });
+    res.json({ sessionId: session.id, url: session.url });
   } catch (error: any) {
     console.error("Checkout error:", error);
-    res.status(500).json({ error: "Failed to create checkout session" });
+    res.status(500).json({ error: error.message || "Failed to create checkout session" });
+  }
+});
+
+router.get("/api/stripe/verify-session", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const sessionId = req.query.session_id as string | undefined;
+    if (!sessionId) {
+      return res.status(400).json({ error: "session_id is required" });
+    }
+
+    const stripe = await getUncachableStripeClient();
+    if (!stripe) return res.status(503).json({ error: "Stripe is not configured on this server" });
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    await syncUserFromCheckoutSession(stripe, session, req.userId!);
+
+    const [user] = await db.select().from(users).where(eq(users.id, req.userId!));
+    res.json({
+      success: true,
+      subscriptionStatus: user?.subscriptionStatus,
+      subscriptionPlan: user?.subscriptionPlan,
+      subscriptionExpiresAt: user?.subscriptionExpiresAt,
+    });
+  } catch (error: any) {
+    console.error("Verify session error:", error);
+    res.status(400).json({ error: error.message || "Failed to verify checkout session" });
   }
 });
 
 router.post("/api/stripe/create-portal", authMiddleware, async (req: AuthRequest, res) => {
   try {
     const stripe = await getUncachableStripeClient();
-    if (!stripe) return res.status(500).json({ error: "Stripe not configured" });
+    if (!stripe) return res.status(503).json({ error: "Stripe is not configured on this server" });
     
     const [user] = await db.select().from(users).where(eq(users.id, req.userId!));
     
     if (!user?.stripeCustomerId) {
-      return res.status(400).json({ error: "No subscription found" });
+      return res.status(400).json({ error: "No Stripe billing profile found for this account" });
     }
     
-    const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+    const baseUrl = resolveAppBaseUrl(req);
+    const returnUrl = req.body?.returnUrl || `${baseUrl}/app/profile`;
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${baseUrl}/profile`,
+      return_url: returnUrl,
     });
     
     res.json({ url: session.url });
@@ -4010,7 +4179,7 @@ router.get("/api/home", async (req, res) => {
 
     res.json({
       success: true,
-      data: {
+      data: normalizeHomePayload(req, {
         banners: activeBanners.map(b => ({
           id: b.id,
           title: b.title,
@@ -4058,8 +4227,11 @@ router.get("/api/home", async (req, res) => {
         })),
         videos: allVideos.map(v => ({
           id: `vid_${v.id}`,
+          type: "video",
+          name: v.title,
           title: v.title,
           description: v.description,
+          media_url: v.videoUrl,
           video_url: v.videoUrl,
           thumbnail_url: v.thumbnailUrl,
           duration: v.duration,
@@ -4083,7 +4255,7 @@ router.get("/api/home", async (req, res) => {
           end_date: activeCompetition.endDate,
           status: activeCompetition.status
         } : null
-      }
+      }),
     });
   } catch (error) {
     console.error("Error fetching home data:", error);
@@ -4419,243 +4591,12 @@ router.post("/api/posts/:post_id/comments", authMiddleware, async (req: AuthRequ
   }
 });
 
-// ==================== MOBILE APP - CONTEST API ====================
+// ==================== MOBILE APP - CONTEST API (legacy aliases) ====================
 
-router.get("/api/contest/info", async (req, res) => {
-  try {
-    const now = new Date();
-    const [activeContest] = await db.select().from(competitions)
-      .where(and(
-        eq(competitions.isActive, true),
-        lte(competitions.startDate, now),
-        gte(competitions.endDate, now)
-      ))
-      .orderBy(desc(competitions.startDate))
-      .limit(1);
-
-    if (!activeContest) {
-      const [upcoming] = await db.select().from(competitions)
-        .where(eq(competitions.isActive, true))
-        .orderBy(asc(competitions.startDate))
-        .limit(1);
-      
-      if (upcoming) {
-        return res.json({
-          contest_id: `monthly_${upcoming.id}`,
-          contest_title: upcoming.title,
-          banner_image: upcoming.image,
-          prize_details: upcoming.prize,
-          start_date: upcoming.startDate,
-          end_date: upcoming.endDate,
-          rules_summary: upcoming.description || "One entry per household. Recent photos only."
-        });
-      }
-      return res.json({ contest_id: null, contest_title: null });
-    }
-
-    res.json({
-      contest_id: `monthly_${activeContest.id}`,
-      contest_title: activeContest.title,
-      banner_image: activeContest.image,
-      prize_details: activeContest.prize,
-      start_date: activeContest.startDate,
-      end_date: activeContest.endDate,
-      rules_summary: activeContest.description || "One entry per household. Recent photos only."
-    });
-  } catch (error) {
-    console.error("Error fetching contest info:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch contest info" });
-  }
-});
-
-router.get("/api/contest/entries", optionalAuthMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const now = new Date();
-    const [activeContest] = await db.select().from(competitions)
-      .where(and(
-        eq(competitions.isActive, true),
-        lte(competitions.startDate, now),
-        gte(competitions.endDate, now)
-      ))
-      .limit(1);
-
-    if (!activeContest) {
-      return res.json({ entries: [] });
-    }
-
-    const entriesData = await db.select({
-      entry: competitionEntries,
-      user: { id: users.id, name: users.name, avatar: users.avatar }
-    }).from(competitionEntries)
-      .leftJoin(users, eq(competitionEntries.userId, users.id))
-      .where(and(
-        eq(competitionEntries.competitionId, activeContest.id),
-        eq(competitionEntries.status, "approved")
-      ))
-      .orderBy(desc(competitionEntries.votes));
-
-    let userVotes: number[] = [];
-    if (req.userId) {
-      const votesData = await db.select({ entryId: votes.entryId }).from(votes)
-        .where(eq(votes.userId, req.userId));
-      userVotes = votesData.map(v => v.entryId);
-    }
-
-    const formattedEntries = entriesData.map(e => ({
-      id: `entry_${e.entry.id}`,
-      title: e.entry.title,
-      description: e.entry.description,
-      image_url: e.entry.imageUrl,
-      votes_count: e.entry.votes || 0,
-      is_liked_by_me: userVotes.includes(e.entry.id),
-      user: {
-        name: e.user?.name || "Anonymous",
-        avatar: e.user?.avatar || null
-      }
-    }));
-
-    res.json({ entries: formattedEntries });
-  } catch (error) {
-    console.error("Error fetching contest entries:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch contest entries" });
-  }
-});
-
-router.post("/api/contest/submit", authMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const { title, description, image_url, before_image_url } = req.body;
-
-    const now = new Date();
-    const [activeContest] = await db.select().from(competitions)
-      .where(and(
-        eq(competitions.isActive, true),
-        lte(competitions.startDate, now),
-        gte(competitions.endDate, now)
-      ))
-      .limit(1);
-
-    if (!activeContest) {
-      return res.status(400).json({ success: false, error: "No active contest available" });
-    }
-
-    const [existingEntry] = await db.select().from(competitionEntries)
-      .where(and(
-        eq(competitionEntries.competitionId, activeContest.id),
-        eq(competitionEntries.userId, req.userId!)
-      ));
-
-    if (existingEntry) {
-      return res.status(400).json({ success: false, error: "You have already submitted an entry for this contest" });
-    }
-
-    const [entry] = await db.insert(competitionEntries).values({
-      competitionId: activeContest.id,
-      userId: req.userId!,
-      title,
-      description,
-      imageUrl: image_url,
-      beforeImageUrl: before_image_url,
-      status: "approved"
-    }).returning();
-
-    res.json({
-      success: true,
-      data: {
-        id: entry.id,
-        contest_id: entry.competitionId,
-        title: entry.title,
-        description: entry.description,
-        image_url: entry.imageUrl,
-        before_image_url: entry.beforeImageUrl,
-        status: entry.status,
-        created_at: entry.createdAt
-      }
-    });
-  } catch (error) {
-    console.error("Error submitting contest entry:", error);
-    res.status(500).json({ success: false, error: "Failed to submit contest entry" });
-  }
-});
-
-router.post("/api/contest/entries/:id/vote", authMiddleware, async (req: AuthRequest, res) => {
-  try {
-    const entryId = parseInt(req.params.id);
-
-    const [existing] = await db.select().from(votes)
-      .where(and(eq(votes.entryId, entryId), eq(votes.userId, req.userId!)));
-
-    if (existing) {
-      await db.delete(votes)
-        .where(and(eq(votes.entryId, entryId), eq(votes.userId, req.userId!)));
-      await db.update(competitionEntries)
-        .set({ votes: sql`GREATEST(${competitionEntries.votes} - 1, 0)` })
-        .where(eq(competitionEntries.id, entryId));
-      
-      res.json({ success: true, action: "unvoted" });
-    } else {
-      await db.insert(votes).values({ userId: req.userId!, entryId });
-      await db.update(competitionEntries)
-        .set({ votes: sql`${competitionEntries.votes} + 1` })
-        .where(eq(competitionEntries.id, entryId));
-      
-      res.json({ success: true, action: "voted" });
-    }
-  } catch (error) {
-    console.error("Error toggling vote:", error);
-    res.status(500).json({ success: false, error: "Failed to toggle vote" });
-  }
-});
-
-router.get("/api/contest/winners", async (req, res) => {
-  try {
-    // Get completed competitions (status='completed')
-    const pastContests = await db.select().from(competitions)
-      .where(eq(competitions.status, 'completed'))
-      .orderBy(desc(competitions.endDate))
-      .limit(6);
-
-    const winners = await Promise.all(pastContests.map(async (contest) => {
-      const [winnerEntry] = await db.select({
-        entry: competitionEntries,
-        user: { id: users.id, name: users.name, avatar: users.avatar, email: users.email }
-      }).from(competitionEntries)
-        .leftJoin(users, eq(competitionEntries.userId, users.id))
-        .where(and(
-          eq(competitionEntries.competitionId, contest.id),
-          or(eq(competitionEntries.isWinner, true), eq(competitionEntries.rank, 1))
-        ))
-        .limit(1);
-
-      if (!winnerEntry) return null;
-
-      return {
-        competition_id: contest.id,
-        competition_title: contest.title,
-        month: contest.month,
-        year: String(contest.year),
-        start_date: contest.startDate,
-        end_date: contest.endDate,
-        prize: contest.prize,
-        prize_image_url: contest.prizeImageUrl,
-        entry_title: winnerEntry.entry.title,
-        entry_image: winnerEntry.entry.imageUrl,
-        entry_description: winnerEntry.entry.description,
-        winner: {
-          id: winnerEntry.user?.id,
-          name: winnerEntry.user?.name || "Anonymous",
-          avatar: winnerEntry.user?.avatar
-        }
-      };
-    }));
-
-    res.json({
-      winners: winners.filter(w => w !== null)
-    });
-  } catch (error) {
-    console.error("Error fetching winners:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch winners" });
-  }
-});
+router.get("/api/contest/info", handleContestInfo);
+router.get("/api/contest/entries", optionalAuthMiddleware, handleActiveEntries);
+router.post("/api/contest/submit", authMiddleware, handleSubmitActiveEntry);
+router.get("/api/contest/winners", handleWinners);
 
 // ==================== MOBILE APP - QUESTIONS/CHAT API ====================
 
@@ -6870,6 +6811,224 @@ router.put("/api/admin/email-settings", authMiddleware, adminMiddleware, async (
   }
 });
 
+// ==================== OPENAI / AI SETTINGS ====================
+
+router.get("/api/admin/openai-settings", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const configs = await db.select().from(adminConfigs)
+      .where(sql`${adminConfigs.configKey} LIKE 'openai_%'`);
+
+    const settings: Record<string, string> = {};
+    configs.forEach(c => {
+      settings[c.configKey] = c.configValue || '';
+    });
+
+    const hasDbKey = Boolean(settings.openai_api_key);
+    const hasEnvKey = Boolean(process.env.OPENAI_API_KEY?.trim());
+
+    res.json({
+      openai_api_key: hasDbKey ? '(configured)' : '',
+      openai_base_url: settings.openai_base_url || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+      configured: hasDbKey || hasEnvKey,
+      source: hasDbKey ? 'admin_panel' : hasEnvKey ? 'environment' : 'none',
+    });
+  } catch (error) {
+    console.error("Error fetching OpenAI settings:", error);
+    res.status(500).json({ error: "Failed to fetch OpenAI settings" });
+  }
+});
+
+router.put("/api/admin/openai-settings", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const allowedKeys = ['openai_api_key', 'openai_base_url'];
+
+    for (const [key, value] of Object.entries(req.body)) {
+      if (!allowedKeys.includes(key)) continue;
+      if (key === 'openai_api_key' && (value === '(configured)' || value === '')) continue;
+
+      const existing = await db.select().from(adminConfigs)
+        .where(eq(adminConfigs.configKey, key))
+        .limit(1);
+
+      if (existing.length > 0) {
+        await db.update(adminConfigs)
+          .set({ configValue: value as string, updatedAt: new Date(), updatedBy: req.userId, isSecret: key === 'openai_api_key' })
+          .where(eq(adminConfigs.configKey, key));
+      } else {
+        await db.insert(adminConfigs).values({
+          configKey: key,
+          configValue: value as string,
+          isSecret: key === 'openai_api_key',
+          description: 'OpenAI API setting',
+          updatedBy: req.userId,
+        });
+      }
+    }
+
+    res.json({ success: true, message: "OpenAI settings updated" });
+  } catch (error) {
+    console.error("Error updating OpenAI settings:", error);
+    res.status(500).json({ error: "Failed to update OpenAI settings" });
+  }
+});
+
+router.post("/api/admin/openai-settings/test", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
+  try {
+    if (!(await isOpenAiConfigured())) {
+      return res.status(400).json({ error: "OpenAI is not configured. Save your API key first." });
+    }
+
+    const prompt = (req.body?.prompt as string)?.trim() || "Say hello in one short sentence as AI of Lawncare Workshop.";
+    const content = await createChatCompletion(
+      [
+        { role: "system", content: AI_SYSTEM_PROMPTS.turfTalk },
+        { role: "user", content: prompt },
+      ],
+      100,
+    );
+
+    res.json({ success: true, message: "OpenAI connection successful", data: { content } });
+  } catch (error: any) {
+    const message = error?.message || "";
+    if (message.startsWith("OPENAI_HTTP_")) {
+      const status = parseInt(message.replace("OPENAI_HTTP_", ""), 10);
+      return res.status(502).json({ error: `OpenAI returned error ${status}. Check your API key and billing.` });
+    }
+    console.error("Error testing OpenAI:", error);
+    res.status(500).json({ error: error?.message || "Failed to test OpenAI connection" });
+  }
+});
+
+// ==================== WEATHER API SETTINGS ====================
+
+router.get("/api/admin/weather-settings", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const settings = await loadAdminConfigKeys([...WEATHER_CONFIG_KEYS]);
+    const hasDbKey = Boolean(settings.weather_api_key);
+    const hasEnvKey = Boolean(process.env.WEATHER_API_KEY?.trim());
+
+    res.json({
+      weather_api_key: maskSecret(settings.weather_api_key, hasDbKey),
+      configured: hasDbKey || hasEnvKey,
+      source: configSource(hasDbKey, hasEnvKey),
+    });
+  } catch (error) {
+    console.error("Error fetching weather settings:", error);
+    res.status(500).json({ error: "Failed to fetch weather settings" });
+  }
+});
+
+router.put("/api/admin/weather-settings", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
+  try {
+    await saveAdminConfigKeys(
+      req.body,
+      [...WEATHER_CONFIG_KEYS],
+      ["weather_api_key"],
+      req.userId,
+    );
+    res.json({ success: true, message: "Weather API settings updated" });
+  } catch (error) {
+    console.error("Error updating weather settings:", error);
+    res.status(500).json({ error: "Failed to update weather settings" });
+  }
+});
+
+router.post("/api/admin/weather-settings/test", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const apiKey = await loadWeatherApiKey();
+    if (!apiKey) {
+      return res.status(400).json({ error: "Weather API is not configured. Save your API key first." });
+    }
+
+    const testQuery = (req.body?.query as string)?.trim() || "90210";
+    const url = new URL("https://api.weatherapi.com/v1/forecast.json");
+    url.searchParams.set("key", apiKey);
+    url.searchParams.set("q", testQuery);
+    url.searchParams.set("days", "1");
+
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      return res.status(502).json({ error: "Weather API returned an error. Check your key." });
+    }
+
+    const data = await response.json();
+    res.json({
+      success: true,
+      message: "Weather API connection successful",
+      data: {
+        location: data.location?.name,
+        temp_f: data.current?.temp_f,
+        condition: data.current?.condition?.text,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error testing weather API:", error);
+    res.status(500).json({ error: error?.message || "Failed to test weather API" });
+  }
+});
+
+// ==================== STRIPE SETTINGS ====================
+
+router.get("/api/admin/stripe-settings", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const settings = await loadAdminConfigKeys([...STRIPE_CONFIG_KEYS]);
+    const hasDbSecret = Boolean(settings.stripe_secret_key);
+    const hasEnvSecret = Boolean(process.env.STRIPE_SECRET_KEY?.trim());
+
+    res.json({
+      stripe_secret_key: maskSecret(settings.stripe_secret_key, hasDbSecret),
+      stripe_publishable_key: settings.stripe_publishable_key || process.env.STRIPE_PUBLISHABLE_KEY || "",
+      stripe_webhook_secret: maskSecret(settings.stripe_webhook_secret, Boolean(settings.stripe_webhook_secret)),
+      stripe_monthly_price_id:
+        settings.stripe_monthly_price_id || process.env.STRIPE_MONTHLY_PRICE_ID || "",
+      stripe_yearly_price_id:
+        settings.stripe_yearly_price_id || process.env.STRIPE_YEARLY_PRICE_ID || "",
+      configured: hasDbSecret || hasEnvSecret,
+      source: configSource(hasDbSecret, hasEnvSecret),
+    });
+  } catch (error) {
+    console.error("Error fetching Stripe settings:", error);
+    res.status(500).json({ error: "Failed to fetch Stripe settings" });
+  }
+});
+
+router.put("/api/admin/stripe-settings", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
+  try {
+    await saveAdminConfigKeys(
+      req.body,
+      [...STRIPE_CONFIG_KEYS],
+      [...STRIPE_SECRET_KEYS],
+      req.userId,
+    );
+    res.json({ success: true, message: "Stripe settings updated" });
+  } catch (error) {
+    console.error("Error updating Stripe settings:", error);
+    res.status(500).json({ error: "Failed to update Stripe settings" });
+  }
+});
+
+router.post("/api/admin/stripe-settings/test", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const stripe = await getUncachableStripeClient();
+    if (!stripe) {
+      return res.status(400).json({ error: "Stripe is not configured. Save your secret and publishable keys first." });
+    }
+
+    const balance = await stripe.balance.retrieve();
+    res.json({
+      success: true,
+      message: "Stripe connection successful",
+      data: {
+        livemode: balance.livemode,
+        currency: balance.available?.[0]?.currency,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error testing Stripe:", error);
+    res.status(500).json({ error: error?.message || "Failed to test Stripe connection" });
+  }
+});
+
 // Send a test email to verify SMTP settings
 router.post("/api/admin/email-settings/test", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
   try {
@@ -7361,6 +7520,152 @@ router.post("/api/admin/revenuecat/test", authMiddleware, adminMiddleware, async
   } catch (error: any) {
     console.error("Error testing RevenueCat:", error);
     res.status(500).json({ ok: false, error: error?.message || "Test failed" });
+  }
+});
+
+// ==================== WEATHER & SOIL TEMP (web + mobile parity) ====================
+
+async function resolveWeatherQuery(query: { lat?: string; lng?: string; zip?: string }) {
+  if (query.lat && query.lng) return `${query.lat},${query.lng}`;
+  if (query.zip) return query.zip;
+  return null;
+}
+
+router.get("/api/weather", async (req, res) => {
+  try {
+    const q = await resolveWeatherQuery({
+      lat: req.query.lat as string | undefined,
+      lng: req.query.lng as string | undefined,
+      zip: req.query.zip as string | undefined,
+    });
+    if (!q) return res.status(400).json({ error: "lat/lng or zip is required" });
+
+    const apiKey = await loadWeatherApiKey();
+    if (!apiKey) {
+      return res.status(503).json({ error: "Weather API is not configured. Add your key in Admin → Integrations." });
+    }
+    const url = new URL("https://api.weatherapi.com/v1/forecast.json");
+    url.searchParams.set("key", apiKey);
+    url.searchParams.set("q", q);
+    url.searchParams.set("days", "1");
+
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      return res.status(502).json({ error: "Failed to fetch weather" });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Weather proxy error:", error);
+    res.status(500).json({ error: "Failed to fetch weather" });
+  }
+});
+
+router.get("/api/soil-temp", async (req, res) => {
+  try {
+    let lat = req.query.lat ? Number(req.query.lat) : undefined;
+    let lng = req.query.lng ? Number(req.query.lng) : undefined;
+    const zip = req.query.zip as string | undefined;
+
+    if ((!lat || !lng) && zip) {
+      const apiKey = await loadWeatherApiKey();
+      if (!apiKey) {
+        return res.status(503).json({ error: "Weather API is not configured" });
+      }
+      const geoResponse = await fetch(
+        `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${encodeURIComponent(zip)}&days=1`,
+      );
+      if (geoResponse.ok) {
+        const geo = await geoResponse.json();
+        lat = geo?.location?.lat;
+        lng = geo?.location?.lon;
+      }
+    }
+
+    if (!lat || !lng || Number.isNaN(lat) || Number.isNaN(lng)) {
+      return res.status(400).json({ error: "lat/lng or zip is required" });
+    }
+
+    const now = new Date();
+    const startDate = now.toISOString().split("T")[0];
+    const end = new Date(now);
+    end.setDate(end.getDate() + 7);
+    const endDate = end.toISOString().split("T")[0];
+
+    const url = new URL("https://api.open-meteo.com/v1/forecast");
+    url.searchParams.set("latitude", String(lat));
+    url.searchParams.set("longitude", String(lng));
+    url.searchParams.set("hourly", "soil_temperature_6cm");
+    url.searchParams.set("temperature_unit", "fahrenheit");
+    url.searchParams.set("start_date", startDate);
+    url.searchParams.set("end_date", endDate);
+    url.searchParams.set("timezone", "auto");
+
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      return res.status(502).json({ error: "Failed to fetch soil temperature" });
+    }
+
+    const data = await response.json();
+    const hourly = data?.hourly?.soil_temperature_6cm as number[] | undefined;
+    const currentSoilTemp = hourly?.[0] ?? null;
+    const avgSoilTemp =
+      hourly && hourly.length > 0
+        ? hourly.reduce((sum, value) => sum + value, 0) / hourly.length
+        : null;
+
+    res.json({
+      currentSoilTemp,
+      avgSoilTemp,
+      hourly: data.hourly,
+    });
+  } catch (error) {
+    console.error("Soil temp proxy error:", error);
+    res.status(500).json({ error: "Failed to fetch soil temperature" });
+  }
+});
+
+router.get("/api/user/my-content", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    const posts = await db
+      .select({
+        id: forumPosts.id,
+        content: forumPosts.content,
+        imageUrls: forumPosts.imageUrls,
+        mediaUrl: forumPosts.mediaUrl,
+        likesCount: forumPosts.likesCount,
+        commentsCount: forumPosts.commentsCount,
+        createdAt: forumPosts.createdAt,
+      })
+      .from(forumPosts)
+      .where(eq(forumPosts.userId, userId))
+      .orderBy(desc(forumPosts.createdAt));
+
+    const entries = await db
+      .select({
+        entry: competitionEntries,
+        competition: { id: competitions.id, title: competitions.title },
+      })
+      .from(competitionEntries)
+      .leftJoin(competitions, eq(competitionEntries.competitionId, competitions.id))
+      .where(eq(competitionEntries.userId, userId))
+      .orderBy(desc(competitionEntries.createdAt));
+
+    res.json({
+      status: true,
+      data: {
+        forumPosts: posts,
+        contestEntries: entries.map((row) => ({
+          ...row.entry,
+          competitionTitle: row.competition?.title,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("My content error:", error);
+    res.status(500).json({ status: false, error: "Failed to load your content" });
   }
 });
 

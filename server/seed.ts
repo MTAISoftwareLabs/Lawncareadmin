@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { 
   users, grassTypes, videoLessons, lawnCarePlans, deals, testimonials, faqs, 
-  blogPosts, siteSettings, competitions
+  blogPosts, siteSettings, competitions, subscriptionPlans
 } from "../shared/schema";
 import { hashPassword } from "./auth";
 
@@ -119,7 +119,9 @@ export async function seedDatabaseIfEmpty() {
       secondaryColor: "#16a34a",
       contactEmail: "support@lawncareworkshop.com",
       monthlyPrice: "9.99",
-      yearlyPrice: "89.99"
+      yearlyPrice: "89.99",
+      heroButtonText: "Start Your 7-Day Free Trial",
+      heroBadgeText: "Built for Cool-Season Lawns",
     });
     console.log("Created site settings");
     
@@ -138,6 +140,8 @@ export async function seedDatabaseIfEmpty() {
       isActive: true
     });
     console.log("Created sample competition");
+
+    await ensureSubscriptionPlans();
     
     console.log("Database seeding completed successfully!");
     
@@ -145,4 +149,57 @@ export async function seedDatabaseIfEmpty() {
     console.error("Error seeding database:", error);
     throw error;
   }
+}
+
+export async function ensureSubscriptionPlans() {
+  const existing = await db.select().from(subscriptionPlans);
+  if (existing.length > 0) return;
+
+  await db.insert(subscriptionPlans).values([
+    {
+      name: "Monthly",
+      slug: "monthly",
+      description: "Perfect for trying out all premium features",
+      price: "9.99",
+      currency: "USD",
+      intervalType: "month",
+      intervalCount: 1,
+      trialDays: 7,
+      stripePriceId: process.env.STRIPE_MONTHLY_PRICE_ID || null,
+      features: JSON.stringify([
+        "Personalized lawn care plans",
+        "All video lessons library",
+        "AI-powered lawn diagnosis",
+        "Expert Q&A access",
+        "Monthly competition entry",
+        "Exclusive deals & discounts",
+        "Cancel anytime",
+      ]),
+      displayOrder: 1,
+      isActive: true,
+    },
+    {
+      name: "Yearly",
+      slug: "yearly",
+      description: "Best value - save over 25%",
+      price: "89.99",
+      currency: "USD",
+      intervalType: "year",
+      intervalCount: 1,
+      trialDays: 7,
+      stripePriceId: process.env.STRIPE_YEARLY_PRICE_ID || null,
+      features: JSON.stringify([
+        "Everything in Monthly",
+        "2 months FREE",
+        "Priority expert support",
+        "Early access to new features",
+        "Exclusive seasonal guides",
+        "VIP competition perks",
+      ]),
+      displayOrder: 2,
+      isActive: true,
+    },
+  ]);
+
+  console.log("Created default subscription plans");
 }

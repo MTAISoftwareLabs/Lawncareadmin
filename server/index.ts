@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import routes from "./routes";
-import { seedDatabaseIfEmpty } from "./seed";
+import { seedDatabaseIfEmpty, ensureSubscriptionPlans } from "./seed";
 import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
@@ -52,12 +52,24 @@ if (isProduction) {
 
 if (!isProduction) {
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      "http://localhost:5000",
+      "http://localhost:5001",
+      "http://127.0.0.1:5000",
+      "http://127.0.0.1:5001",
+    ];
+
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    } else {
+      res.header("Access-Control-Allow-Origin", "http://localhost:5000");
+    }
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     
-    if (req.method === 'OPTIONS') {
+    if (req.method === "OPTIONS") {
       return res.sendStatus(200);
     }
     
@@ -322,6 +334,7 @@ async function runBackgroundInit() {
     
     // Seed database on startup (idempotent - only seeds if empty)
     await seedDatabaseIfEmpty();
+    await ensureSubscriptionPlans();
     
     // Ensure admin user name is "Admin"
     try {

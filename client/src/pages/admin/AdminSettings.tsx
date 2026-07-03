@@ -2,24 +2,41 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminGuard } from "@/components/AdminGuard";
 import { AdminLayout } from "@/components/AdminLayout";
-import { Save, Lock, Upload, X, Eye, EyeOff } from "lucide-react";
+import { Save, Lock, Upload, X, Eye, EyeOff, Bot, Loader2, Send, CheckCircle2, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+
+interface OpenAiSettings {
+  openai_api_key: string;
+  openai_base_url: string;
+  configured: boolean;
+  source: "admin_panel" | "environment" | "none";
+}
 
 function AdminSettingsContent() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     appName: "",
     logoUrl: "",
+    tagline: "",
     heroTitle: "",
     heroSubtitle: "",
     heroButtonText: "",
+    heroBadgeText: "",
     primaryColor: "",
     heroImage1: "",
     heroImage2: "",
+    monthlyPrice: "",
+    yearlyPrice: "",
+    appStoreUrl: "",
+    playStoreUrl: "",
   });
   
   const [passwordData, setPasswordData] = useState({
@@ -34,6 +51,13 @@ function AdminSettingsContent() {
     confirm: false,
   });
 
+  const [openAiForm, setOpenAiForm] = useState({
+    openai_api_key: "",
+    openai_base_url: "https://api.openai.com/v1",
+  });
+  const [showOpenAiKey, setShowOpenAiKey] = useState(false);
+  const [testResponse, setTestResponse] = useState("");
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ["landing-page-settings"],
     queryFn: api.admin.settings.getLandingPage,
@@ -44,21 +68,78 @@ function AdminSettingsContent() {
       setFormData({
         appName: settings.appName || "",
         logoUrl: settings.logoUrl || "",
+        tagline: settings.tagline || "",
         heroTitle: settings.heroTitle || "",
         heroSubtitle: settings.heroSubtitle || "",
         heroButtonText: settings.heroButtonText || "",
+        heroBadgeText: settings.heroBadgeText || "",
         primaryColor: settings.primaryColor || "",
         heroImage1: settings.heroImage1 || "",
         heroImage2: settings.heroImage2 || "",
+        monthlyPrice: settings.monthlyPrice || "",
+        yearlyPrice: settings.yearlyPrice || "",
+        appStoreUrl: settings.appStoreUrl || "",
+        playStoreUrl: settings.playStoreUrl || "",
       });
     }
   }, [settings]);
+
+  const { data: openAiSettings, isLoading: openAiLoading } = useQuery<OpenAiSettings>({
+    queryKey: ["/api/admin/openai-settings"],
+  });
+
+  useEffect(() => {
+    if (openAiSettings) {
+      setOpenAiForm({
+        openai_api_key: openAiSettings.openai_api_key === "(configured)" ? "(configured)" : "",
+        openai_base_url: openAiSettings.openai_base_url || "https://api.openai.com/v1",
+      });
+    }
+  }, [openAiSettings]);
 
   const updateMutation = useMutation({
     mutationFn: api.admin.settings.updateLandingPage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["landing-page-settings"] });
-      alert("Landing page settings updated successfully! Refresh the homepage to see changes.");
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      toast({ title: "Saved", description: "Landing page updated. Refresh the homepage to preview." });
+    },
+  });
+
+  const saveOpenAiMutation = useMutation({
+    mutationFn: async (payload: typeof openAiForm) =>
+      apiRequest("/api/admin/openai-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/openai-settings"] });
+      toast({ title: "Saved", description: "OpenAI settings updated. Mobile AI Turf Talk will use this key." });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to save OpenAI settings.", variant: "destructive" });
+    },
+  });
+
+  const testOpenAiMutation = useMutation({
+    mutationFn: async () =>
+      apiRequest("/api/admin/openai-settings/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      }),
+    onSuccess: (res: any) => {
+      setTestResponse(res?.data?.content || res?.message || "Connection successful");
+      toast({ title: "OpenAI test successful", description: "AI Turf Talk is ready for the mobile app." });
+    },
+    onError: (err: any) => {
+      setTestResponse("");
+      toast({
+        title: "OpenAI test failed",
+        description: err?.message || "Could not reach OpenAI with the saved key.",
+        variant: "destructive",
+      });
     },
   });
   
@@ -104,6 +185,11 @@ function AdminSettingsContent() {
     });
   };
 
+  const handleOpenAiSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveOpenAiMutation.mutate(openAiForm);
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'logoUrl' | 'heroImage1' | 'heroImage2') => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -135,7 +221,7 @@ function AdminSettingsContent() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || openAiLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -150,7 +236,117 @@ function AdminSettingsContent() {
     <AdminLayout>
     <div className="min-h-screen bg-white p-8">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Landing Page Settings</h1>
+        <h1 className="text-3xl font-bold mb-2">Settings</h1>
+        <p className="text-gray-600 mb-8">Manage landing page branding. Third-party API keys are in Integrations.</p>
+
+        <Tabs defaultValue="landing" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="landing">Landing Page</TabsTrigger>
+            <TabsTrigger value="ai">
+              <Bot className="h-4 w-4 mr-2" />
+              AI / OpenAI
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ai" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  {openAiSettings?.configured ? (
+                    <>
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      OpenAI is configured
+                      {openAiSettings.source === "environment" && (
+                        <span className="text-xs font-normal text-muted-foreground">(from server environment)</span>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-5 h-5 text-amber-600" />
+                      OpenAI is not configured
+                    </>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Powers <strong>AI Turf Talk</strong> and forum text refinement in the mobile app.
+                  Also manage Weather, Stripe, and other keys in{" "}
+                  <a href="/admin/integrations" className="text-green-700 underline">Integrations</a>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleOpenAiSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      OpenAI API Key
+                      {openAiSettings?.openai_api_key === "(configured)" && " (leave blank to keep current)"}
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showOpenAiKey ? "text" : "password"}
+                        value={openAiForm.openai_api_key === "(configured)" ? "" : openAiForm.openai_api_key}
+                        onChange={(e) => setOpenAiForm({ ...openAiForm, openai_api_key: e.target.value })}
+                        placeholder={openAiSettings?.openai_api_key === "(configured)" ? "••••••••" : "sk-..."}
+                        className="pr-10"
+                        data-testid="input-openai-api-key"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOpenAiKey(!showOpenAiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        data-testid="button-toggle-openai-key"
+                      >
+                        {showOpenAiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Create a key at platform.openai.com. Admin panel settings override the server <code>OPENAI_API_KEY</code> env var.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">API Base URL (optional)</label>
+                    <Input
+                      value={openAiForm.openai_base_url}
+                      onChange={(e) => setOpenAiForm({ ...openAiForm, openai_base_url: e.target.value })}
+                      placeholder="https://api.openai.com/v1"
+                      data-testid="input-openai-base-url"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button type="submit" disabled={saveOpenAiMutation.isPending} data-testid="button-save-openai">
+                      {saveOpenAiMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Save AI Settings
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={testOpenAiMutation.isPending || !openAiSettings?.configured}
+                      onClick={() => testOpenAiMutation.mutate()}
+                      data-testid="button-test-openai"
+                    >
+                      {testOpenAiMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4 mr-2" />
+                      )}
+                      Test Connection
+                    </Button>
+                  </div>
+
+                  {testResponse && (
+                    <div className="rounded-lg border bg-green-50 p-4 text-sm text-green-900">
+                      <p className="font-medium mb-1">Test response</p>
+                      <p>{testResponse}</p>
+                    </div>
+                  )}
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="landing">
+        <h2 className="text-2xl font-bold mb-8">Landing Page Settings</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="p-6">
@@ -239,15 +435,27 @@ function AdminSettingsContent() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Button Text</label>
-                <input
-                  type="text"
-                  value={formData.heroButtonText}
-                  onChange={(e) => setFormData({ ...formData, heroButtonText: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
-                  placeholder="Shop Now"
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Hero badge text</label>
+                  <input
+                    type="text"
+                    value={formData.heroBadgeText}
+                    onChange={(e) => setFormData({ ...formData, heroBadgeText: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                    placeholder="Built for Cool-Season Lawns"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Primary CTA button text</label>
+                  <input
+                    type="text"
+                    value={formData.heroButtonText}
+                    onChange={(e) => setFormData({ ...formData, heroButtonText: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                    placeholder="Start Your 7-Day Free Trial"
+                  />
+                </div>
               </div>
             </div>
           </Card>
@@ -380,6 +588,61 @@ function AdminSettingsContent() {
             </div>
           </Card>
 
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-4">Mobile app store links</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Displayed on the landing page. Users are redirected to the App Store or Google Play to install the app.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Apple App Store URL</label>
+                <input
+                  type="url"
+                  value={formData.appStoreUrl}
+                  onChange={(e) => setFormData({ ...formData, appStoreUrl: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                  placeholder="https://apps.apple.com/app/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Google Play Store URL</label>
+                <input
+                  type="url"
+                  value={formData.playStoreUrl}
+                  onChange={(e) => setFormData({ ...formData, playStoreUrl: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                  placeholder="https://play.google.com/store/apps/details?id=..."
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-4">Pricing on landing page</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium mb-2">Monthly price (USD)</label>
+                <input
+                  type="text"
+                  value={formData.monthlyPrice}
+                  onChange={(e) => setFormData({ ...formData, monthlyPrice: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                  placeholder="9.99"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Yearly price (USD)</label>
+                <input
+                  type="text"
+                  value={formData.yearlyPrice}
+                  onChange={(e) => setFormData({ ...formData, yearlyPrice: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-600 focus:outline-none"
+                  placeholder="89.99"
+                />
+              </div>
+            </div>
+          </Card>
+
           <Button
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 text-white h-12 text-lg"
@@ -479,6 +742,8 @@ function AdminSettingsContent() {
             </div>
           </Card>
         </form>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
     </AdminLayout>

@@ -12,6 +12,9 @@ import {
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
+import { MarketingSiteHeader } from "@/components/MarketingSiteHeader";
 
 interface Diagnosis {
   id: number;
@@ -24,7 +27,7 @@ interface Diagnosis {
   createdAt: string;
 }
 
-export function DiagnosisPage() {
+export function DiagnosisPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -100,29 +103,20 @@ export function DiagnosisPage() {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <PageShell embedded={embedded}>
+        <div className={`flex items-center justify-center ${embedded ? "py-24" : "min-h-screen"}`}>
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </PageShell>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                  <Leaf className="w-6 h-6 text-primary-foreground" />
-                </div>
-                <span className="font-bold text-xl text-foreground">Lawncare Workshop</span>
-              </Link>
-            </div>
-          </div>
-        </header>
+      <PageShell embedded={embedded}>
+        {!embedded && <MarketingSiteHeader />}
         
-        <div className="container mx-auto px-4 py-20 text-center">
+        <PageContainer embedded={embedded} className={embedded ? "py-12 text-center" : "py-20 text-center"}>
           <Camera className="w-16 h-16 mx-auto mb-6 text-muted-foreground/50" />
           <h1 className="text-3xl font-bold text-foreground mb-4">AI Lawn Diagnosis</h1>
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
@@ -136,31 +130,16 @@ export function DiagnosisPage() {
               <Button>Start Free Trial</Button>
             </Link>
           </div>
-        </div>
-      </div>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl text-foreground">Lawncare Workshop</span>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="ghost">Dashboard</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <PageShell embedded={embedded}>
+      {!embedded && <MarketingSiteHeader user />}
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <PageContainer embedded={embedded} className="max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -347,7 +326,7 @@ export function DiagnosisPage() {
                 Get personalized advice from our lawn care professionals
               </p>
             </div>
-            <Link href="/expert-qa">
+            <Link href="/app/questions">
               <Button>
                 Ask an Expert
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -355,7 +334,7 @@ export function DiagnosisPage() {
             </Link>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

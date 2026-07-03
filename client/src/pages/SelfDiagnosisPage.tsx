@@ -11,6 +11,8 @@ import {
   AlertTriangle, HelpCircle, RefreshCw, Camera
 } from "lucide-react";
 import { useLocation } from "wouter";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 
 interface DiagnosisOption {
   label: string;
@@ -38,7 +40,7 @@ interface DiagnosisFlow {
   isActive: boolean;
 }
 
-export function SelfDiagnosisPage() {
+export function SelfDiagnosisPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [, navigate] = useLocation();
   const [selectedFlow, setSelectedFlow] = useState<DiagnosisFlow | null>(null);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
@@ -139,9 +141,9 @@ export function SelfDiagnosisPage() {
     const progress = result ? 100 : ((currentStepIndex + 1) / totalSteps) * 100;
 
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <PageShell embedded={embedded}>
+        {!embedded && <Navbar />}
+        <PageContainer embedded={embedded} className={embedded ? "max-w-2xl" : "max-w-2xl"}>
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <Button variant="ghost" onClick={goBack} data-testid="button-back">
@@ -195,7 +197,7 @@ export function SelfDiagnosisPage() {
                 <Button onClick={() => setSelectedFlow(null)} variant="outline" data-testid="button-new-diagnosis">
                   New Diagnosis
                 </Button>
-                <Button onClick={() => navigate("/diagnosis")} data-testid="button-ai-diagnosis">
+                <Button onClick={() => navigate("/app/diagnosis")} data-testid="button-ai-diagnosis">
                   <Camera className="w-4 h-4 mr-2" />
                   Get AI Analysis
                 </Button>
@@ -229,15 +231,15 @@ export function SelfDiagnosisPage() {
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
+      </PageContainer>
+    </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Self-Diagnosis Tool</h1>
           <p className="text-muted-foreground">
@@ -298,7 +300,7 @@ export function SelfDiagnosisPage() {
               <p className="text-muted-foreground text-center max-w-md mb-6">
                 Self-diagnosis tools will be available soon. In the meantime, try our AI-powered diagnosis.
               </p>
-              <Button onClick={() => navigate("/diagnosis")} data-testid="button-go-ai-diagnosis">
+              <Button onClick={() => navigate("/app/diagnosis")} data-testid="button-go-ai-diagnosis">
                 <Camera className="w-4 h-4 mr-2" />
                 Use AI Diagnosis
               </Button>
@@ -318,14 +320,14 @@ export function SelfDiagnosisPage() {
                   Upload a photo of your lawn for instant AI-powered diagnosis
                 </p>
               </div>
-              <Button onClick={() => navigate("/diagnosis")} data-testid="button-ai-analysis">
+              <Button onClick={() => navigate("/app/diagnosis")} data-testid="button-ai-analysis">
                 Use AI Diagnosis
               </Button>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }
 

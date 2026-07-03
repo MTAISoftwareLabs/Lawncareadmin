@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { 
   Leaf, MessageCircle, Send, User, Clock, CheckCircle, Search,
-  Loader2, ChevronRight, HelpCircle, Lock
+  Loader2, ChevronRight, HelpCircle, Lock, Image
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
+import { MarketingSiteHeader } from "@/components/MarketingSiteHeader";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { uploadMediaFile } from "@/lib/uploadMedia";
 
 interface Question {
   id: number;
@@ -31,17 +37,18 @@ interface Question {
 
 const categories = ["General", "Fertilization", "Watering", "Mowing", "Weeds", "Disease", "Seeding"];
 
-export function ExpertQAPage() {
+export function ExpertQAPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [question, setQuestion] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("General");
   const [searchQuery, setSearchQuery] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-  });
+  const { user, isLoading: userLoading } = useAuth();
+  const { isPremium: isPremiumUser } = useSubscription();
 
   const { data: questions = [], isLoading: questionsLoading } = useQuery<Question[]>({
     queryKey: ["/api/expert-questions"],
@@ -53,7 +60,7 @@ export function ExpertQAPage() {
   });
 
   const submitMutation = useMutation({
-    mutationFn: async (data: { question: string; category: string }) => {
+    mutationFn: async (data: { question: string; category: string; imageUrl?: string | null }) => {
       return apiRequest("/api/expert-questions", {
         method: "POST",
         body: JSON.stringify(data),
@@ -65,6 +72,7 @@ export function ExpertQAPage() {
         description: "Our experts will respond soon.",
       });
       setQuestion("");
+      setImageUrl(null);
       queryClient.invalidateQueries({ queryKey: ["/api/expert-questions"] });
     },
     onError: () => {
@@ -85,7 +93,7 @@ export function ExpertQAPage() {
       });
       return;
     }
-    submitMutation.mutate({ question, category: selectedCategory });
+    submitMutation.mutate({ question, category: selectedCategory, imageUrl });
   };
 
   const answeredQuestions = questions.filter(q => q.status === 'answered');
@@ -94,9 +102,7 @@ export function ExpertQAPage() {
     q.answer?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const isPremiumUser = user?.subscriptionStatus === 'premium' || user?.subscriptionStatus === 'trial';
-
-  if (userLoading) {
+  if (userLoading && !embedded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -105,39 +111,10 @@ export function ExpertQAPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl text-foreground">Lawncare Workshop</span>
-            </Link>
-            
-            <div className="flex items-center gap-3">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button variant="ghost">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="ghost">Log In</Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button>Start Free Trial</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+    <PageShell embedded={embedded}>
+      {!embedded && <MarketingSiteHeader user={!!user} />}
 
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <PageContainer embedded={embedded} className="max-w-5xl">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -198,7 +175,42 @@ export function ExpertQAPage() {
                       data-testid="input-expert-question"
                     />
                   </div>
-                  <Button 
+                  <div>
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingImage(true);
+                        try {
+                          const url = await uploadMediaFile(file);
+                          setImageUrl(url);
+                        } catch {
+                          toast({ title: "Upload failed", variant: "destructive" });
+                        } finally {
+                          setUploadingImage(false);
+                          e.target.value = "";
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingImage}
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      <Image className="mr-2 h-4 w-4" />
+                      {uploadingImage ? "Uploading..." : "Attach photo"}
+                    </Button>
+                    {imageUrl && (
+                      <img src={imageUrl} alt="Attachment" className="mt-3 max-h-32 rounded-lg object-cover" />
+                    )}
+                  </div>
+                  <Button
                     className="w-full"
                     onClick={handleSubmit}
                     disabled={submitMutation.isPending}
@@ -228,7 +240,7 @@ export function ExpertQAPage() {
                   <p className="text-muted-foreground mb-6">
                     Upgrade to Premium to ask questions directly to our lawn care experts.
                   </p>
-                  <Link href="/profile">
+                  <Link href="/pricing">
                     <Button>
                       Upgrade to Premium
                       <ChevronRight className="w-4 h-4 ml-1" />
@@ -429,7 +441,7 @@ export function ExpertQAPage() {
             </Card>
           </div>
         </div>
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

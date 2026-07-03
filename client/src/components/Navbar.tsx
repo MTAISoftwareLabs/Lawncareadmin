@@ -38,32 +38,32 @@ export function Navbar() {
             <Link href="/" className="text-sm font-medium transition-colors hover:text-green-100">
               Home
             </Link>
-            <Link href="/lessons" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-lessons">
+            <Link href="/app/lessons" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-lessons">
               Lessons
             </Link>
-            <Link href="/care-plans" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-care-plans">
+            <Link href="/app/care-plans" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-care-plans">
               Plans
             </Link>
-            <Link href="/forum" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-forum">
+            <Link href="/app/forum" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-forum">
               Forum
             </Link>
-            <Link href="/grass-types" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-grass-types">
+            <Link href="/app/grass-types" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-grass-types">
               Grass
             </Link>
             <Link href="/deals" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-deals">
               Deals
             </Link>
-            <Link href="/library" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-library">
+            <Link href="/app/library" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-library">
               Library
             </Link>
-            <Link href="/calendars" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-calendars">
+            <Link href="/app/calendars" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-calendars">
               Calendars
             </Link>
-            <Link href="/self-diagnosis" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-self-diagnosis">
+            <Link href="/app/self-diagnosis" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-self-diagnosis">
               Diagnose
             </Link>
             {user && (
-              <Link href="/chat" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-chat">
+              <Link href="/app/chat" className="text-sm font-medium transition-colors hover:text-green-100" data-testid="link-chat">
                 Chat
               </Link>
             )}

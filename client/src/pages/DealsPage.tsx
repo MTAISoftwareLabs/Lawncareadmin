@@ -10,6 +10,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
+import { MarketingSiteHeader } from "@/components/MarketingSiteHeader";
+import { AppImage } from "@/components/media/AppImage";
 
 interface Deal {
   id: number;
@@ -27,13 +31,17 @@ interface Deal {
 
 const categories = ["All", "Fertilizer", "Seed", "Equipment", "Tools", "Pest Control"];
 
-export function DealsPage() {
+export function DealsPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const { data: deals = [], isLoading } = useQuery<Deal[]>({
+  const { data: dealsResponse, isLoading } = useQuery<{ success?: boolean; data?: Deal[] } | Deal[]>({
     queryKey: ["/api/deals"],
   });
+
+  const deals: Deal[] = Array.isArray(dealsResponse)
+    ? dealsResponse
+    : dealsResponse?.data ?? [];
 
   const filteredDeals = deals.filter((deal) => {
     const matchesSearch = deal.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,34 +54,10 @@ export function DealsPage() {
   const regularDeals = filteredDeals.filter(d => !d.isFeatured);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl text-foreground">Lawncare Workshop</span>
-            </Link>
-            
-            <div className="flex items-center gap-3">
-              <Link href="/lessons" className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Lessons
-              </Link>
-              <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Blog
-              </Link>
-              <Link href="/signup">
-                <Button>Join Free</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+    <PageShell embedded={embedded}>
+      {!embedded && <MarketingSiteHeader />}
 
-      <div className="container mx-auto px-4 py-8">
+      <PageContainer embedded={embedded}>
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -213,8 +197,8 @@ export function DealsPage() {
             </Link>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }
 
@@ -228,7 +212,7 @@ function DealCard({ deal, featured = false }: { deal: Deal; featured?: boolean }
     >
       <div className="relative aspect-square bg-muted">
         {deal.imageUrl ? (
-          <img 
+          <AppImage 
             src={deal.imageUrl} 
             alt={deal.title}
             className="w-full h-full object-cover"

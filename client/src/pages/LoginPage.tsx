@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, UserRound } from "lucide-react";
 import { motion } from "framer-motion";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
+import { setGuestBrowseMode } from "@/lib/premiumAccess";
 import logoUrl from "@assets/logo_1768933994269.jpeg";
 
 export function LoginPage() {
@@ -15,12 +17,16 @@ export function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const nextPath = getPostAuthRedirect("/app");
+  const signupHref = nextPath === "/app" ? "/signup" : `/signup?next=${encodeURIComponent(nextPath)}`;
 
   const loginMutation = useMutation({
     mutationFn: () => api.auth.login(formData),
     onSuccess: () => {
+      setGuestBrowseMode(false);
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      setLocation("/dashboard");
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setLocation(getPostAuthRedirect("/app"));
     },
     onError: (err: any) => {
       setError(err.message || "Login failed");
@@ -100,11 +106,31 @@ export function LoginPage() {
               <Button type="submit" className="w-full" disabled={loginMutation.isPending} data-testid="button-login-submit">
                 {loginMutation.isPending ? "Signing in..." : "Sign In"}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  setGuestBrowseMode(true);
+                  try {
+                    await api.auth.logout();
+                  } catch {
+                    // Ignore — ensure no stale premium session while browsing as guest
+                  }
+                  queryClient.removeQueries({ queryKey: ["/api/auth/me"] });
+                  queryClient.removeQueries({ queryKey: ["user"] });
+                  setLocation(nextPath);
+                }}
+                data-testid="button-continue-guest"
+              >
+                <UserRound className="mr-2 h-4 w-4" />
+                Continue as Guest
+              </Button>
             </form>
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <Link href="/signup" className="text-primary font-medium hover:underline" data-testid="link-signup">
+                <Link href={signupHref} className="text-primary font-medium hover:underline" data-testid="link-signup">
                   Start your free trial
                 </Link>
               </p>

@@ -10,6 +10,8 @@ import {
   Leaf, Sun, Droplets, Thermometer, ChevronDown, ChevronUp,
   CheckCircle, AlertCircle, Info, MapPin
 } from "lucide-react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 
 interface GrassType {
   id: number;
@@ -35,7 +37,7 @@ interface GrassType {
   isActive: boolean;
 }
 
-export function GrassTypesPage() {
+export function GrassTypesPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [expandedGrass, setExpandedGrass] = useState<number | null>(null);
 
@@ -79,9 +81,9 @@ export function GrassTypesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Grass Types Guide</h1>
           <p className="text-muted-foreground">
@@ -356,7 +358,7 @@ export function GrassTypesPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

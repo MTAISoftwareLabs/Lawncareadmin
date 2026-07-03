@@ -9,6 +9,8 @@ import {
   Calendar, Download, ChevronRight, FileText, 
   Clock, Leaf, Sun, Snowflake, Cloud
 } from "lucide-react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 
 interface CalendarEvent {
   id: number;
@@ -34,7 +36,7 @@ interface LawnCalendar {
   events: CalendarEvent[];
 }
 
-export function CalendarsPage() {
+export function CalendarsPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [selectedCalendar, setSelectedCalendar] = useState<LawnCalendar | null>(null);
   const [skillLevel, setSkillLevel] = useState<string>("beginner");
 
@@ -82,9 +84,9 @@ export function CalendarsPage() {
     const events = selectedCalendar.events || [];
 
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8">
+      <PageShell embedded={embedded}>
+        {!embedded && <Navbar />}
+        <PageContainer embedded={embedded}>
           <Button
             variant="ghost"
             onClick={() => setSelectedCalendar(null)}
@@ -171,15 +173,15 @@ export function CalendarsPage() {
               </CardContent>
             </Card>
           )}
-        </div>
-      </div>
+      </PageContainer>
+    </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Lawn Care Calendars</h1>
           <p className="text-muted-foreground">
@@ -275,8 +277,8 @@ export function CalendarsPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }
 

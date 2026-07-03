@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Navbar } from "@/components/Navbar";
@@ -15,6 +15,9 @@ import {
   MessageSquare, Heart, Send, Plus, Image, Video, 
   ArrowLeft, Clock, User 
 } from "lucide-react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
+import { uploadMediaFile } from "@/lib/uploadMedia";
 
 interface ForumPost {
   id: number;
@@ -40,13 +43,16 @@ interface Comment {
   createdAt: string;
 }
 
-export function ForumPage() {
+export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
   useLocation();
   const { toast } = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedPost, setSelectedPost] = useState<ForumPost | null>(null);
   const [newPostContent, setNewPostContent] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [postImages, setPostImages] = useState<string[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const { data: posts, isLoading } = useQuery<ForumPost[]>({
     queryKey: ["/api/posts"],
@@ -58,18 +64,20 @@ export function ForumPage() {
   });
 
   const createPostMutation = useMutation({
-    mutationFn: async (content: string) => {
+    mutationFn: async (payload: { content: string; imageUrls: string[] }) => {
       return apiRequest("/api/posts", {
         method: "POST",
         body: JSON.stringify({
-          contentType: "text",
-          textContent: content,
+          post_type: payload.imageUrls.length ? "image" : "text",
+          content: payload.content,
+          image_urls: payload.imageUrls,
         }),
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
       setNewPostContent("");
+      setPostImages([]);
       setShowCreateForm(false);
       toast({ title: "Success", description: "Post created successfully!" });
     },
@@ -122,9 +130,9 @@ export function ForumPage() {
 
   if (selectedPost) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <PageShell embedded={embedded}>
+        {!embedded && <Navbar />}
+        <PageContainer embedded={embedded} className="max-w-2xl">
           <Button
             variant="ghost"
             onClick={() => setSelectedPost(null)}
@@ -237,15 +245,15 @@ export function ForumPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </PageContainer>
+      </PageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
+    <PageShell embedded={embedded}>
+      {!embedded && <Navbar />}
+      <PageContainer embedded={embedded}>
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Community Forum</h1>
@@ -269,11 +277,43 @@ export function ForumPage() {
                 className="min-h-[120px] mb-4"
                 data-testid="textarea-new-post"
               />
+              {postImages.length > 0 && (
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {postImages.map((url) => (
+                    <img key={url} src={url} alt="" className="h-20 w-20 rounded-lg object-cover" />
+                  ))}
+                </div>
+              )}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploadingImage(true);
+                  try {
+                    const url = await uploadMediaFile(file);
+                    setPostImages((prev) => [...prev, url]);
+                  } catch {
+                    toast({ title: "Upload failed", variant: "destructive" });
+                  } finally {
+                    setUploadingImage(false);
+                    e.target.value = "";
+                  }
+                }}
+              />
               <div className="flex items-center justify-between">
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadingImage}
+                    onClick={() => imageInputRef.current?.click()}
+                  >
                     <Image className="w-4 h-4 mr-1" />
-                    Photo
+                    {uploadingImage ? "Uploading..." : "Photo"}
                   </Button>
                   <Button variant="outline" size="sm" disabled>
                     <Video className="w-4 h-4 mr-1" />
@@ -281,12 +321,12 @@ export function ForumPage() {
                   </Button>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setShowCreateForm(false)} data-testid="button-cancel-post">
+                  <Button variant="outline" onClick={() => { setShowCreateForm(false); setPostImages([]); }} data-testid="button-cancel-post">
                     Cancel
                   </Button>
                   <Button
-                    onClick={() => createPostMutation.mutate(newPostContent)}
-                    disabled={!newPostContent.trim() || createPostMutation.isPending}
+                    onClick={() => createPostMutation.mutate({ content: newPostContent, imageUrls: postImages })}
+                    disabled={(!newPostContent.trim() && postImages.length === 0) || createPostMutation.isPending}
                     data-testid="button-submit-post"
                   >
                     {createPostMutation.isPending ? "Posting..." : "Post"}
@@ -394,7 +434,7 @@ export function ForumPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </div>
+      </PageContainer>
+    </PageShell>
   );
 }

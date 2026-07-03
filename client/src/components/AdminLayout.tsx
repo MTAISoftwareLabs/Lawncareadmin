@@ -4,7 +4,7 @@ import {
   Leaf, Settings, LayoutDashboard, LogOut, Users, 
   Menu, X, HelpCircle, BookOpen, Trophy, ShoppingBag,
   Play, Camera, Calendar, Star, MessageSquare, Bell, Image, Wrench,
-  Home, Stethoscope, FileText, BellRing, BellOff, UserCog, CreditCard, Mail
+  Home, Stethoscope, FileText, BellRing, BellOff, UserCog, CreditCard, Mail, Plug
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import logoUrl from "@assets/logo_1768933994269.jpeg";
@@ -101,6 +101,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { label: "Static Pages", path: "/admin/pages", icon: FileText, color: "from-slate-500 to-gray-600", iconColor: "text-slate-500" },
     { label: "Privacy Content", path: "/admin/privacy-content", icon: FileText, color: "from-indigo-500 to-blue-600", iconColor: "text-indigo-500" },
     { label: "Config", path: "/admin/config", icon: Wrench, color: "from-zinc-500 to-slate-600", iconColor: "text-zinc-500" },
+    { label: "Integrations", path: "/admin/integrations", icon: Plug, color: "from-cyan-500 to-blue-600", iconColor: "text-cyan-500" },
     { label: "Email / SMTP", path: "/admin/email-settings", icon: Mail, color: "from-blue-500 to-indigo-600", iconColor: "text-blue-500" },
     { label: "RevenueCat", path: "/admin/revenuecat", icon: CreditCard, color: "from-purple-500 to-pink-600", iconColor: "text-purple-500" },
     { label: "Settings", path: "/admin/settings", icon: Settings, color: "from-gray-500 to-slate-600", iconColor: "text-gray-500" },

@@ -10,6 +10,14 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
+import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
+import { MarketingSiteHeader } from "@/components/MarketingSiteHeader";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { VideoPlayerDialog } from "@/components/media/VideoPlayerDialog";
+import { AppImage } from "@/components/media/AppImage";
+import { useToast } from "@/hooks/use-toast";
 
 interface VideoLesson {
   id: number;
@@ -27,15 +35,16 @@ interface VideoLesson {
 const categories = ["All", "Basics", "Seasonal", "Maintenance", "Problem Solving", "Science", "Nutrition"];
 const difficulties = ["All", "beginner", "intermediate", "advanced"];
 
-export function LessonsPage() {
+export function LessonsPage({ embedded = false }: EmbeddedPageProps = {}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+  const [playing, setPlaying] = useState<{ url: string; title: string } | null>(null);
+  const [loadingLessonId, setLoadingLessonId] = useState<number | null>(null);
+  const { toast } = useToast();
 
-  const { data: user } = useQuery({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-  });
+  const { user } = useAuth();
+  const { isPremium: isPremiumUser } = useSubscription();
 
   const { data: lessons = [], isLoading } = useQuery<VideoLesson[]>({
     queryKey: ["/api/lessons"],
@@ -49,42 +58,40 @@ export function LessonsPage() {
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
-  const isPremiumUser = user?.subscriptionStatus === 'premium' || user?.subscriptionStatus === 'trial';
+  const openLesson = async (lesson: VideoLesson) => {
+    if (lesson.isPremium && !isPremiumUser) {
+      return;
+    }
+    setLoadingLessonId(lesson.id);
+    try {
+      const res = await fetch(`/api/lessons/${lesson.id}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load lesson");
+      const detail = await res.json();
+      if (!detail.videoUrl) {
+        toast({
+          title: "Premium required",
+          description: "Subscribe to watch this lesson.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setPlaying({ url: detail.videoUrl, title: detail.title || lesson.title });
+    } catch {
+      toast({
+        title: "Could not play video",
+        description: "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingLessonId(null);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl text-foreground">Lawncare Workshop</span>
-            </Link>
-            
-            <div className="flex items-center gap-3">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button variant="ghost" data-testid="nav-dashboard">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="ghost">Log In</Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button>Start Free Trial</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+    <PageShell embedded={embedded}>
+      {!embedded && <MarketingSiteHeader user={!!user} />}
 
-      <div className="container mx-auto px-4 py-8">
+      <PageContainer embedded={embedded}>
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -171,10 +178,16 @@ export function LessonsPage() {
                     lesson.isPremium && !isPremiumUser ? 'opacity-75' : ''
                   }`}
                   data-testid={`lesson-card-${lesson.id}`}
+                  onClick={() => openLesson(lesson)}
                 >
                   <div className="relative aspect-video bg-muted">
+                    {loadingLessonId === lesson.id && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+                        <Play className="h-10 w-10 animate-pulse text-white" />
+                      </div>
+                    )}
                     {lesson.thumbnailUrl ? (
-                      <img 
+                      <AppImage 
                         src={lesson.thumbnailUrl} 
                         alt={lesson.title}
                         className="w-full h-full object-cover"
@@ -266,7 +279,14 @@ export function LessonsPage() {
             </Card>
           </motion.div>
         )}
-      </div>
-    </div>
+      </PageContainer>
+
+      <VideoPlayerDialog
+        open={!!playing}
+        onOpenChange={(open) => !open && setPlaying(null)}
+        videoUrl={playing?.url}
+        title={playing?.title}
+      />
+    </PageShell>
   );
 }

@@ -1,112 +1,156 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Leaf, Star, Crown, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+
+interface StripePlan {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  price: string;
+  currency?: string | null;
+  intervalType: string;
+  trialDays?: number | null;
+  stripePriceId: string | null;
+  features?: string | null;
+  displayOrder?: number | null;
+}
+
+function parseFeatures(features?: string | null): string[] {
+  if (!features) return [];
+  try {
+    const parsed = JSON.parse(features);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return features.split("\n").map((line) => line.trim()).filter(Boolean);
+  }
+}
+
+function formatMoney(amount: string, currency = "USD") {
+  const value = Number(amount);
+  if (Number.isNaN(value)) return amount;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(value);
+}
 
 export default function PricingPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("yearly");
+  const { user, isAuthenticated } = useAuth();
+  const { isPremium } = useSubscription();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState<string>("yearly");
 
-  const { data: user } = useQuery<{ id: number; name: string; email: string; subscriptionStatus: string }>({
-    queryKey: ["/api/auth/me"],
+  const { data: stripeConfig } = useQuery<{ enabled: boolean; publishableKey?: string | null }>({
+    queryKey: ["/api/stripe/config"],
   });
 
-  const subscribeMutation = useMutation({
-    mutationFn: async (plan: string) => {
-      return apiRequest("/api/subscriptions/create", {
-        method: "POST",
-        body: JSON.stringify({ plan }),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      toast({
-        title: "Subscription Activated",
-        description: "Welcome to Lawncare Workshop Premium! Enjoy full access to all features.",
-      });
-      navigate("/dashboard");
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Subscription Failed",
-        description: error.message || "Please try again or contact support.",
-        variant: "destructive",
-      });
-    },
+  const { data: plans = [], isLoading: plansLoading } = useQuery<StripePlan[]>({
+    queryKey: ["/api/stripe/plans"],
   });
 
-  const handleSubscribe = async (plan: "monthly" | "yearly") => {
-    if (!user) {
-      navigate("/signup");
+  const sortedPlans = useMemo(
+    () => [...plans].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)),
+    [plans],
+  );
+
+  const selectedPlan = sortedPlans.find((plan) => plan.slug === selectedSlug) ?? sortedPlans[0];
+  const stripeEnabled = stripeConfig?.enabled && sortedPlans.some((plan) => plan.stripePriceId);
+
+  const startCheckout = async (plan: StripePlan) => {
+    if (!isAuthenticated) {
+      navigate("/signup?next=/pricing");
       return;
     }
 
-    if (user.subscriptionStatus === "premium") {
+    if (!plan.stripePriceId) {
       toast({
-        title: "Already Subscribed",
-        description: "You already have an active premium subscription.",
+        title: "Plan unavailable",
+        description: "This plan is not configured for web checkout yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!stripeEnabled) {
+      toast({
+        title: "Payments unavailable",
+        description: "Stripe is not configured on this server. Add your Stripe keys to enable checkout.",
+        variant: "destructive",
       });
       return;
     }
 
     setIsProcessing(true);
     try {
-      await subscribeMutation.mutateAsync(plan);
+      const origin = window.location.origin;
+      const response = await apiRequest("/api/stripe/create-checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          priceId: plan.stripePriceId,
+          successUrl: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${origin}/pricing`,
+        }),
+      });
+
+      if (response.url) {
+        window.location.href = response.url;
+        return;
+      }
+
+      throw new Error("Stripe checkout URL was not returned");
+    } catch (error) {
+      toast({
+        title: "Checkout failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const plans = [
-    {
-      id: "monthly",
-      name: "Monthly",
-      price: "$9.99",
-      period: "/month",
-      description: "Perfect for trying out all premium features",
-      features: [
-        "Personalized lawn care plans",
-        "All video lessons library",
-        "AI-powered lawn diagnosis",
-        "Expert Q&A access",
-        "Monthly competition entry",
-        "Exclusive deals & discounts",
-        "Cancel anytime",
-      ],
-      popular: false,
-    },
-    {
-      id: "yearly",
-      name: "Yearly",
-      price: "$89.99",
-      period: "/year",
-      description: "Best value - save over 25%",
-      originalPrice: "$119.88",
-      savings: "Save $29.89",
-      features: [
-        "Everything in Monthly",
-        "2 months FREE",
-        "Priority expert support",
-        "Early access to new features",
-        "Exclusive seasonal guides",
-        "VIP competition perks",
-        "Best value guarantee",
-      ],
-      popular: true,
-    },
-  ];
+  const openBillingPortal = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await apiRequest("/api/stripe/create-portal", {
+        method: "POST",
+        body: JSON.stringify({
+          returnUrl: `${window.location.origin}/app/profile`,
+        }),
+      });
+
+      if (response.url) {
+        window.location.href = response.url;
+        return;
+      }
+
+      throw new Error("Billing portal URL was not returned");
+    } catch (error) {
+      toast({
+        title: "Unable to open billing portal",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const freeFeatures = [
-    "Basic lawn care tips",
-    "Limited video previews",
-    "Community Q&A access",
+    "Start Here! expert content",
+    "Member deals",
+    "Community access",
     "Monthly newsletter",
   ];
 
@@ -114,28 +158,24 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
         <div className="container flex h-16 items-center justify-between gap-4">
-          <button 
-            onClick={() => navigate("/")} 
-            className="flex items-center gap-2"
-            data-testid="link-home"
-          >
+          <button onClick={() => navigate("/")} className="flex items-center gap-2" data-testid="link-home">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
               <Leaf className="h-5 w-5 text-primary" />
             </div>
             <span className="text-xl font-bold text-foreground">Lawncare Workshop</span>
           </button>
           <div className="flex items-center gap-2">
-            {user ? (
-              <Button variant="outline" onClick={() => navigate("/dashboard")} data-testid="button-dashboard">
-                Dashboard
+            {isAuthenticated ? (
+              <Button variant="outline" onClick={() => navigate("/app")} data-testid="button-dashboard">
+                Open app
               </Button>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => navigate("/login")} data-testid="button-login">
+                <Button variant="ghost" onClick={() => navigate("/login?next=/pricing")} data-testid="button-login">
                   Log In
                 </Button>
-                <Button onClick={() => navigate("/signup")} data-testid="button-signup">
-                  Start Free Trial
+                <Button onClick={() => navigate("/signup?next=/pricing")} data-testid="button-signup">
+                  Start free
                 </Button>
               </>
             )}
@@ -147,43 +187,43 @@ export default function PricingPage() {
         <div className="mx-auto max-w-4xl text-center">
           <Badge variant="secondary" className="mb-4">
             <Crown className="mr-1 h-3 w-3" />
-            Premium Membership
+            Premium membership
           </Badge>
-          <h1 className="mb-4 text-4xl font-bold tracking-tight">
-            Unlock Your Lawn's Full Potential
-          </h1>
+          <h1 className="mb-4 text-4xl font-bold tracking-tight">Unlock your lawn&apos;s full potential</h1>
           <p className="mb-8 text-lg text-muted-foreground">
-            Get personalized guidance from a golf course superintendent with 30+ years of experience.
-            Start your 7-day free trial today.
+            Same premium content as the mobile app — one membership, every platform. Start with a 7-day free trial on
+            web checkout.
           </p>
 
-          <div className="mb-12 inline-flex rounded-lg bg-muted p-1">
-            <button
-              onClick={() => setSelectedPlan("monthly")}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                selectedPlan === "monthly"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              data-testid="button-plan-monthly"
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setSelectedPlan("yearly")}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                selectedPlan === "yearly"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              data-testid="button-plan-yearly"
-            >
-              Yearly
-              <Badge variant="default" className="ml-2 text-xs">
-                Save 25%
-              </Badge>
-            </button>
-          </div>
+          {!stripeEnabled && (
+            <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              Web checkout requires Stripe keys on the server. Mobile subscribers can sign in with the same account.
+            </div>
+          )}
+
+          {sortedPlans.length > 1 && (
+            <div className="mb-12 inline-flex rounded-lg bg-muted p-1">
+              {sortedPlans.map((plan) => (
+                <button
+                  key={plan.slug}
+                  onClick={() => setSelectedSlug(plan.slug)}
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                    selectedSlug === plan.slug
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  data-testid={`button-plan-${plan.slug}`}
+                >
+                  {plan.name}
+                  {plan.slug === "yearly" && (
+                    <Badge variant="default" className="ml-2 text-xs">
+                      Save 25%
+                    </Badge>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
@@ -197,12 +237,12 @@ export default function PricingPage() {
                 <span className="text-3xl font-bold">$0</span>
                 <span className="text-muted-foreground">/forever</span>
               </div>
-              <CardDescription>Get started with basic features</CardDescription>
+              <CardDescription>Get started with core member features</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {freeFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
+                {freeFeatures.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-muted-foreground" />
                     {feature}
                   </li>
@@ -210,127 +250,136 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button 
-                variant="outline" 
-                className="w-full" 
-                onClick={() => navigate(user ? "/dashboard" : "/signup")}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(isAuthenticated ? "/app" : "/signup")}
                 data-testid="button-free-plan"
               >
-                {user ? "Current Plan" : "Get Started"}
+                {isAuthenticated ? "Current free access" : "Get started"}
               </Button>
             </CardFooter>
           </Card>
 
-          {plans.map((plan) => (
-            <Card 
-              key={plan.id} 
-              className={`relative ${plan.popular ? "border-primary shadow-lg" : ""}`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground">
-                    <Star className="mr-1 h-3 w-3" />
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className={`h-5 w-5 ${plan.popular ? "text-primary" : "text-muted-foreground"}`} />
-                  {plan.name}
-                </CardTitle>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
-                </div>
-                {plan.originalPrice && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground line-through">{plan.originalPrice}</span>
-                    <Badge variant="secondary" className="text-xs">{plan.savings}</Badge>
-                  </div>
-                )}
-                <CardDescription>{plan.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-primary" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+          {plansLoading ? (
+            <Card className="md:col-span-2">
+              <CardContent className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </CardContent>
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  variant={plan.popular ? "default" : "outline"}
-                  onClick={() => handleSubscribe(plan.id as "monthly" | "yearly")}
-                  disabled={isProcessing || user?.subscriptionStatus === "premium"}
-                  data-testid={`button-subscribe-${plan.id}`}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : user?.subscriptionStatus === "premium" ? (
-                    "Current Plan"
-                  ) : (
-                    "Start 7-Day Free Trial"
-                  )}
-                </Button>
-              </CardFooter>
             </Card>
-          ))}
+          ) : (
+            sortedPlans.map((plan) => {
+              const features = parseFeatures(plan.features);
+              const isPopular = plan.slug === "yearly";
+              const isCurrent = isPremium && user?.subscriptionPlan === plan.slug;
+
+              return (
+                <Card key={plan.slug} className={`relative ${isPopular ? "border-primary shadow-lg" : ""}`}>
+                  {isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground">
+                        <Star className="mr-1 h-3 w-3" />
+                        Most popular
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className={`h-5 w-5 ${isPopular ? "text-primary" : "text-muted-foreground"}`} />
+                      {plan.name}
+                    </CardTitle>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold">{formatMoney(plan.price, plan.currency ?? "USD")}</span>
+                      <span className="text-muted-foreground">/{plan.intervalType}</span>
+                    </div>
+                    {plan.description && <CardDescription>{plan.description}</CardDescription>}
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-primary" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    {isPremium ? (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        onClick={openBillingPortal}
+                        disabled={isProcessing}
+                        data-testid={`button-manage-${plan.slug}`}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Opening portal...
+                          </>
+                        ) : isCurrent ? (
+                          "Manage billing"
+                        ) : (
+                          "Manage subscription"
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        variant={isPopular ? "default" : "outline"}
+                        onClick={() => startCheckout(plan)}
+                        disabled={isProcessing || !plan.stripePriceId}
+                        data-testid={`button-subscribe-${plan.slug}`}
+                      >
+                        {isProcessing && selectedPlan?.slug === plan.slug ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Redirecting to Stripe...
+                          </>
+                        ) : plan.trialDays ? (
+                          `Start ${plan.trialDays}-day free trial`
+                        ) : (
+                          "Subscribe with Stripe"
+                        )}
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              );
+            })
+          )}
         </div>
 
         <div className="mx-auto mt-16 max-w-3xl">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle>Frequently Asked Questions</CardTitle>
+              <CardTitle>Frequently asked questions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="font-semibold">How does the 7-day free trial work?</h3>
+                <h3 className="font-semibold">Does web membership work with the mobile app?</h3>
                 <p className="text-sm text-muted-foreground">
-                  Start your trial with full access to all premium features. You won't be charged until after 7 days. 
-                  Cancel anytime during the trial period at no cost.
+                  Yes. Sign in with the same email on iOS/Android. Mobile purchases through the App Store use Apple
+                  billing; web purchases use Stripe — both unlock the same premium content.
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold">Can I switch between monthly and yearly plans?</h3>
+                <h3 className="font-semibold">How does the free trial work?</h3>
                 <p className="text-sm text-muted-foreground">
-                  Yes! You can upgrade to yearly at any time and we'll prorate your existing subscription. 
-                  The yearly plan saves you over 25% compared to monthly billing.
+                  Stripe checkout starts a 7-day trial with full premium access. You will not be charged until the trial
+                  ends, and you can cancel anytime from the billing portal.
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold">What's included in the AI lawn diagnosis?</h3>
+                <h3 className="font-semibold">How do I cancel?</h3>
                 <p className="text-sm text-muted-foreground">
-                  Upload photos of your lawn or plants and get instant analysis of health issues, 
-                  diseases, pests, and personalized treatment recommendations from our AI system, 
-                  reviewed by our expert team.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold">How do I cancel my subscription?</h3>
-                <p className="text-sm text-muted-foreground">
-                  You can cancel anytime from your account settings. Your premium access will continue 
-                  until the end of your current billing period with no additional charges.
+                  Premium members can open the Stripe billing portal from this page or from profile settings in the member
+                  app.
                 </p>
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="mt-16 text-center">
-          <p className="text-sm text-muted-foreground">
-            Questions? Contact us at{" "}
-            <a href="mailto:support@lawncareworkshop.com" className="text-primary hover:underline">
-              support@lawncareworkshop.com
-            </a>
-          </p>
         </div>
       </main>
     </div>

@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { getPostAuthRedirect } from "@/lib/authRedirect";
+import { setGuestBrowseMode } from "@/lib/premiumAccess";
 import logoUrl from "@assets/logo_1768933994269.jpeg";
 
 export function SignupPage() {
@@ -20,12 +22,16 @@ export function SignupPage() {
   });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const nextPath = getPostAuthRedirect("/app");
+  const loginHref = nextPath === "/app" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`;
 
   const signupMutation = useMutation({
     mutationFn: () => api.auth.signup(formData),
     onSuccess: () => {
+      setGuestBrowseMode(false);
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      setLocation("/dashboard");
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setLocation(getPostAuthRedirect("/app"));
     },
     onError: (err: any) => {
       setError(err.message || "Signup failed");
@@ -140,7 +146,7 @@ export function SignupPage() {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link href="/login" className="text-primary font-medium hover:underline" data-testid="link-login">
+                <Link href={loginHref} className="text-primary font-medium hover:underline" data-testid="link-login">
                   Sign in
                 </Link>
               </p>

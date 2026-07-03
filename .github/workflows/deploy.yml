@@ -1,0 +1,53 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build client
+        run: npm run build
+
+      - name: Package release
+        run: |
+          tar czf release.tar.gz \
+            server client shared package.json package-lock.json \
+            vite.config.ts tsconfig.json tsconfig.node.json \
+            drizzle.config.ts postcss.config.js tailwind.config.ts \
+            attached_assets
+
+      - name: Upload to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: release.tar.gz
+          target: /var/www/webportals
+
+      - name: Install, build, and restart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            cd /var/www/webportals
+            tar xzf release.tar.gz
+            rm -f release.tar.gz
+            npm ci
+            npm run build
+            pm2 restart thelawncareworkshop || pm2 restart lawncare
+            pm2 status
