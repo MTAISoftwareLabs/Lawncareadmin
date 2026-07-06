@@ -194,7 +194,7 @@ export function HomePage() {
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/signup">
                   <Button size="lg" className="w-full gap-2 bg-white text-green-800 hover:bg-white/90 sm:w-auto" data-testid="hero-cta-primary">
-                    {settings?.heroButtonText || "Start Your 7-Day Free Trial"}
+                    {settings?.heroButtonText || "Start Your Sneak Peak"}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -216,7 +216,7 @@ export function HomePage() {
               <div className="flex flex-wrap items-center gap-4 text-sm text-white/80">
                 <span className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-300" />
-                  7-day free trial
+                  Sneak Peak
                 </span>
                 <span className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-300" />
@@ -515,7 +515,7 @@ export function HomePage() {
           <div className="mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/signup">
               <Button size="lg" variant="secondary" className="gap-2">
-                {settings?.heroButtonText || "Start Your Free Trial"}
+                {settings?.heroButtonText || "Start Your Sneak Peak"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
