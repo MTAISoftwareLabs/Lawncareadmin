@@ -189,7 +189,7 @@ function ContentCard({
   const isVideo = item.type === "video" || item.id.startsWith("vid_");
   const mediaUrl = resolveMediaUrl(item.media_url);
   const canPlayInApp = isVideo || isVideoUrl(mediaUrl);
-  const link = item.product_link || item.media_url;
+  const link = canPlayInApp ? (item.product_link || item.media_url) : item.product_link;
 
   const handleOpen = () => {
     if (canPlayInApp && mediaUrl) {
