@@ -119,8 +119,8 @@ export function AdminBanners() {
               <ImageIcon className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Home Banners</h1>
-              <p className="text-muted-foreground">Manage app home screen banners</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">Hero Banners</h1>
+              <p className="text-muted-foreground">These images rotate in the homepage hero section &amp; mobile home screen</p>
             </div>
           </div>
           <Button onClick={() => setIsCreating(!isCreating)} data-testid="button-add-banner">
