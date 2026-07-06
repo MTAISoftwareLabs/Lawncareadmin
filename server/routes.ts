@@ -3137,6 +3137,18 @@ router.get("/api/admin/push-notifications", authMiddleware, adminMiddleware, asy
   }
 });
 
+router.delete("/api/admin/push-notifications/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid notification ID" });
+    const deleted = await db.delete(pushNotifications).where(eq(pushNotifications.id, id)).returning();
+    if (!deleted.length) return res.status(404).json({ error: "Notification not found" });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete notification" });
+  }
+});
+
 router.post("/api/admin/push-notifications", authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
   try {
     const { title, body, imageUrl, actionUrl, actionType, targetType, targetUserIds } = req.body;

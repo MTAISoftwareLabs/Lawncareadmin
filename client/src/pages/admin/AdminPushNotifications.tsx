@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Send, Loader2, Users, Crown, User, Settings, CheckCircle, AlertCircle, FileJson, Globe, Smartphone } from "lucide-react";
+import { Bell, Send, Loader2, Users, Crown, User, Settings, CheckCircle, AlertCircle, FileJson, Globe, Smartphone, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileUpload } from "@/components/FileUpload";
 import { clearFirebaseConfigCache } from "@/lib/firebase";
 
@@ -33,6 +34,7 @@ export function AdminPushNotifications() {
     firebase_web_app_id: "",
     firebase_web_vapid_key: "",
   });
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const { data: notifications, isLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/push-notifications"],
@@ -130,6 +132,22 @@ export function AdminPushNotifications() {
     },
     onError: (error: Error) => {
       toast({ title: "Mobile Test Failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest(`/api/admin/push-notifications/${id}`, {
+        method: "DELETE",
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/push-notifications"] });
+      toast({ title: "Deleted", description: "Notification removed from history" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -650,20 +668,20 @@ export function AdminPushNotifications() {
                     data-testid={`notif-${notif.id}`}
                   >
                     <div className="flex justify-between items-start">
-                      <div className="flex gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                      <div className="flex gap-3 flex-1 min-w-0">
+                        <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold ${
                           index % 3 === 0 ? 'bg-gradient-to-br from-violet-500 to-purple-500' :
                           index % 3 === 1 ? 'bg-gradient-to-br from-blue-500 to-cyan-500' :
                           'bg-gradient-to-br from-emerald-500 to-teal-500'
                         }`}>
                           {notif.title.charAt(0).toUpperCase()}
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <h4 className="font-semibold">{notif.title}</h4>
                           <p className="text-sm text-muted-foreground">{notif.body}</p>
                         </div>
                       </div>
-                      <div className="text-right text-sm flex flex-col gap-1">
+                      <div className="text-right text-sm flex flex-col gap-1 ml-2 flex-shrink-0">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                           {notif.successCount} sent
                         </span>
@@ -672,6 +690,16 @@ export function AdminPushNotifications() {
                             {notif.failureCount} failed
                           </span>
                         )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="mt-1 h-7 w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                          data-testid={`button-delete-notif-${notif.id}`}
+                          onClick={() => setConfirmDeleteId(notif.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-1" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
                     <div className="flex gap-4 mt-3 text-xs">
@@ -701,6 +729,36 @@ export function AdminPushNotifications() {
         </>
         )}
       </div>
+
+      <Dialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete notification?</DialogTitle>
+            <DialogDescription>
+              This will remove this notification from the history. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                if (confirmDeleteId !== null) {
+                  deleteMutation.mutate(confirmDeleteId, {
+                    onSettled: () => setConfirmDeleteId(null),
+                  });
+                }
+              }}
+            >
+              {deleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
