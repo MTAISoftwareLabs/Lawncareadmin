@@ -337,10 +337,8 @@ export default function PricingPage() {
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Redirecting to Stripe...
                           </>
-                        ) : plan.trialDays ? (
-                          `Start ${plan.trialDays}-day free trial`
                         ) : (
-                          "Subscribe with Stripe"
+                          "Subscribe"
                         )}
                       </Button>
                     )}
