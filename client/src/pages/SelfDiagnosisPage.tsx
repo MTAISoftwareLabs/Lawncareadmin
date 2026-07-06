@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { 
   TreeDeciduous, ArrowRight, ArrowLeft, CheckCircle,
-  AlertTriangle, HelpCircle, RefreshCw, Camera
+  AlertTriangle, HelpCircle, RefreshCw, Camera, WifiOff
 } from "lucide-react";
 import { useLocation } from "wouter";
 import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
@@ -47,8 +47,9 @@ export function SelfDiagnosisPage({ embedded = false }: EmbeddedPageProps = {}) 
   const [history, setHistory] = useState<string[]>([]);
   const [result, setResult] = useState<DiagnosisOption["result"] | null>(null);
 
-  const { data: diagnosisFlows = [], isLoading } = useQuery<DiagnosisFlow[]>({
+  const { data: diagnosisFlows = [], isLoading, isError, refetch } = useQuery<DiagnosisFlow[]>({
     queryKey: ["/api/self-diagnosis"],
+    retry: 2,
   });
 
   const getQuestions = (flow: DiagnosisFlow): DiagnosisQuestion[] => {
@@ -250,18 +251,32 @@ export function SelfDiagnosisPage({ embedded = false }: EmbeddedPageProps = {}) 
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <Card key={i}>
+              <Card key={i} className="border border-border">
                 <CardHeader>
-                  <Skeleton className="h-12 w-12 rounded-full mb-4" />
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-12 w-12 rounded-full mb-4 bg-muted-foreground/20" />
+                  <Skeleton className="h-6 w-3/4 bg-muted-foreground/20" />
+                  <Skeleton className="h-4 w-1/2 bg-muted-foreground/20" />
                 </CardHeader>
                 <CardFooter>
-                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full bg-muted-foreground/20" />
                 </CardFooter>
               </Card>
             ))}
           </div>
+        ) : isError ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <WifiOff className="w-14 h-14 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Couldn't load diagnosis tools</h3>
+              <p className="text-muted-foreground text-sm mb-6">
+                Check your internet connection and try again.
+              </p>
+              <Button onClick={() => refetch()} data-testid="button-retry">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
         ) : diagnosisFlows.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {diagnosisFlows.map((flow) => {
