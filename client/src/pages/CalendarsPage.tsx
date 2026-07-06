@@ -234,22 +234,28 @@ export function CalendarsPage({ embedded = false }: EmbeddedPageProps = {}) {
                   </CardHeader>
                   <CardContent className="flex flex-wrap gap-2">
                     {calendar.beginnerPdfUrl && (
-                      <Badge variant="outline">
-                        <FileText className="w-3 h-3 mr-1" />
-                        Beginner PDF
-                      </Badge>
+                      <a href={calendar.beginnerPdfUrl} target="_blank" rel="noopener noreferrer" data-testid={`link-beginner-pdf-${calendar.id}`}>
+                        <Badge variant="outline" className="cursor-pointer hover:bg-accent transition-colors">
+                          <FileText className="w-3 h-3 mr-1" />
+                          Beginner PDF
+                        </Badge>
+                      </a>
                     )}
                     {calendar.intermediatePdfUrl && (
-                      <Badge variant="outline">
-                        <FileText className="w-3 h-3 mr-1" />
-                        Intermediate
-                      </Badge>
+                      <a href={calendar.intermediatePdfUrl} target="_blank" rel="noopener noreferrer" data-testid={`link-intermediate-pdf-${calendar.id}`}>
+                        <Badge variant="outline" className="cursor-pointer hover:bg-accent transition-colors">
+                          <FileText className="w-3 h-3 mr-1" />
+                          Intermediate
+                        </Badge>
+                      </a>
                     )}
                     {calendar.advancedPdfUrl && (
-                      <Badge variant="outline">
-                        <FileText className="w-3 h-3 mr-1" />
-                        Advanced
-                      </Badge>
+                      <a href={calendar.advancedPdfUrl} target="_blank" rel="noopener noreferrer" data-testid={`link-advanced-pdf-${calendar.id}`}>
+                        <Badge variant="outline" className="cursor-pointer hover:bg-accent transition-colors">
+                          <FileText className="w-3 h-3 mr-1" />
+                          Advanced
+                        </Badge>
+                      </a>
                     )}
                   </CardContent>
                   <CardFooter>
