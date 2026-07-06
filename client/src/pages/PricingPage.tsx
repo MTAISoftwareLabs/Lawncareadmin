@@ -191,8 +191,7 @@ export default function PricingPage() {
           </Badge>
           <h1 className="mb-4 text-4xl font-bold tracking-tight">Unlock your lawn&apos;s full potential</h1>
           <p className="mb-8 text-lg text-muted-foreground">
-            Same premium content as the mobile app — one membership, every platform. Start with a 7-day free trial on
-            web checkout.
+            Same premium content as the mobile app — one membership, every platform.
           </p>
 
           {!stripeEnabled && (
