@@ -194,7 +194,7 @@ export function HomePage() {
               <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link href="/signup">
                   <Button size="lg" className="w-full gap-2 bg-white text-green-800 hover:bg-white/90 sm:w-auto" data-testid="hero-cta-primary">
-                    {settings?.heroButtonText || "Start Your Sneak Peak"}
+                    {settings?.heroButtonText || "Subscribe"}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -515,7 +515,7 @@ export function HomePage() {
           <div className="mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/signup">
               <Button size="lg" variant="secondary" className="gap-2">
-                {settings?.heroButtonText || "Start Your Sneak Peak"}
+                {settings?.heroButtonText || "Subscribe"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
