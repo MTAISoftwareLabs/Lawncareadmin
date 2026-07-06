@@ -18,6 +18,7 @@ import {
 import type { EmbeddedPageProps } from "@/components/MemberPageWrapper";
 import { PageShell, PageContainer } from "@/components/MemberPageWrapper";
 import { uploadMediaFile } from "@/lib/uploadMedia";
+import { resolveMediaUrl } from "@/lib/mediaUrl";
 
 interface ForumPost {
   id: number;
@@ -28,6 +29,7 @@ interface ForumPost {
   textContent: string | null;
   mediaUrl: string | null;
   thumbnailUrl: string | null;
+  imageUrls: string[];
   likesCount: number;
   commentsCount: number;
   isLiked: boolean;
@@ -43,6 +45,110 @@ interface Comment {
   createdAt: string;
 }
 
+type ApiPost = {
+  post_id: string;
+  user_id: string;
+  user_name: string;
+  user_image: string | null;
+  post_type: string;
+  content?: {
+    text?: string | null;
+    image_urls?: string[];
+    media_url?: string | null;
+    thumbnail_url?: string | null;
+  };
+  total_likes?: number;
+  total_comments?: number;
+  is_liked?: boolean;
+  created_at: string;
+};
+
+type ApiComment = {
+  comment_id: string;
+  user_id: string;
+  user_name: string;
+  user_image: string | null;
+  comment_text: string;
+  created_at: string;
+};
+
+function parseMobileId(value: string): number {
+  const n = parseInt(value.replace(/^[a-z]+/i, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function mapApiPost(raw: ApiPost): ForumPost {
+  const imageUrls = (raw.content?.image_urls ?? [])
+    .map((url) => resolveMediaUrl(url))
+    .filter((url): url is string => !!url);
+  const mediaUrl =
+    resolveMediaUrl(raw.content?.media_url) ||
+    imageUrls[0] ||
+    null;
+
+  return {
+    id: parseMobileId(raw.post_id),
+    userId: parseMobileId(raw.user_id),
+    userName: raw.user_name,
+    userAvatar: resolveMediaUrl(raw.user_image),
+    contentType: raw.post_type || "text",
+    textContent: raw.content?.text ?? null,
+    mediaUrl,
+    thumbnailUrl: resolveMediaUrl(raw.content?.thumbnail_url),
+    imageUrls,
+    likesCount: raw.total_likes ?? 0,
+    commentsCount: raw.total_comments ?? 0,
+    isLiked: !!raw.is_liked,
+    createdAt: raw.created_at,
+  };
+}
+
+function mapApiComment(raw: ApiComment): Comment {
+  return {
+    id: parseMobileId(raw.comment_id),
+    userId: parseMobileId(raw.user_id),
+    userName: raw.user_name,
+    userAvatar: resolveMediaUrl(raw.user_image),
+    content: raw.comment_text,
+    createdAt: raw.created_at,
+  };
+}
+
+async function fetchForumPosts(): Promise<ForumPost[]> {
+  const response = await fetch("/api/posts", { credentials: "include" });
+  if (!response.ok) throw new Error("Failed to load forum posts");
+  const json = await response.json();
+  const rows: ApiPost[] = Array.isArray(json) ? json : json.data ?? [];
+  return rows.map(mapApiPost);
+}
+
+async function fetchForumComments(postId: number): Promise<Comment[]> {
+  const response = await fetch(`/api/posts/${postId}/comments`, { credentials: "include" });
+  if (!response.ok) throw new Error("Failed to load comments");
+  const json = await response.json();
+  const rows: ApiComment[] = Array.isArray(json) ? json : json.data ?? [];
+  return rows.map(mapApiComment);
+}
+
+function PostImages({ post }: { post: ForumPost }) {
+  const urls =
+    post.imageUrls.length > 0
+      ? post.imageUrls
+      : post.mediaUrl && post.contentType === "image"
+        ? [post.mediaUrl]
+        : [];
+
+  if (!urls.length) return null;
+
+  return (
+    <div className={`mb-3 grid gap-2 ${urls.length > 1 ? "grid-cols-2" : ""}`}>
+      {urls.map((url) => (
+        <img key={url} src={url} alt="Post" className="rounded-lg w-full max-h-64 object-cover" />
+      ))}
+    </div>
+  );
+}
+
 export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
   useLocation();
   const { toast } = useToast();
@@ -55,11 +161,13 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const { data: posts, isLoading } = useQuery<ForumPost[]>({
-    queryKey: ["/api/posts"],
+    queryKey: ["forum-posts"],
+    queryFn: fetchForumPosts,
   });
 
   const { data: comments, isLoading: commentsLoading } = useQuery<Comment[]>({
-    queryKey: ["/api/posts", selectedPost?.id, "comments"],
+    queryKey: ["forum-comments", selectedPost?.id],
+    queryFn: () => fetchForumComments(selectedPost!.id),
     enabled: !!selectedPost,
   });
 
@@ -75,7 +183,7 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       setNewPostContent("");
       setPostImages([]);
       setShowCreateForm(false);
@@ -91,7 +199,7 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
       return apiRequest(`/api/posts/${postId}/like`, { method: "POST" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
     },
     onError: () => {
       toast({ title: "Error", description: "Please login to like posts", variant: "destructive" });
@@ -102,12 +210,12 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
     mutationFn: async ({ postId, content }: { postId: number; content: string }) => {
       return apiRequest(`/api/posts/${postId}/comments`, {
         method: "POST",
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ comment_text: content }),
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/posts", selectedPost?.id, "comments"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["forum-comments", selectedPost?.id] });
+      queryClient.invalidateQueries({ queryKey: ["forum-posts"] });
       setNewComment("");
       toast({ title: "Success", description: "Comment added!" });
     },
@@ -160,13 +268,7 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
               {selectedPost.textContent && (
                 <p className="text-foreground">{selectedPost.textContent}</p>
               )}
-              {selectedPost.mediaUrl && selectedPost.contentType === "image" && (
-                <img
-                  src={selectedPost.mediaUrl}
-                  alt="Post"
-                  className="rounded-lg w-full"
-                />
-              )}
+              <PostImages post={selectedPost} />
               {selectedPost.mediaUrl && selectedPost.contentType === "video" && (
                 <video
                   src={selectedPost.mediaUrl}
@@ -377,21 +479,16 @@ export function ForumPage({ embedded = false }: EmbeddedPageProps = {}) {
                         <p className="text-foreground line-clamp-3 mb-3">{post.textContent}</p>
                       )}
 
-                      {post.mediaUrl && post.contentType === "image" && (
-                        <img
-                          src={post.mediaUrl}
-                          alt="Post"
-                          className="rounded-lg w-full max-h-64 object-cover mb-3"
-                        />
-                      )}
+                      <PostImages post={post} />
 
-                      {post.contentType !== "text" && (
+                      {post.contentType === "video" && (
                         <Badge variant="secondary" className="mb-3">
-                          {post.contentType === "image" ? (
-                            <><Image className="w-3 h-3 mr-1" /> Photo</>
-                          ) : (
-                            <><Video className="w-3 h-3 mr-1" /> Video</>
-                          )}
+                          <Video className="w-3 h-3 mr-1" /> Video
+                        </Badge>
+                      )}
+                      {post.imageUrls.length > 0 && post.contentType !== "video" && (
+                        <Badge variant="secondary" className="mb-3">
+                          <Image className="w-3 h-3 mr-1" /> Photo
                         </Badge>
                       )}
 

@@ -7,13 +7,40 @@ import 'package:lawn_care/utils/appcolor.dart';
 import 'package:lawn_care/widgets/full_screen_image_viewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class NotificationsScreen extends StatelessWidget {
-  const NotificationsScreen({super.key});
+class NotificationsScreen extends StatefulWidget {
+  const NotificationsScreen({super.key, this.openNotificationId});
+
+  final int? openNotificationId;
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  late final NotificationsCtrl controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (Get.isRegistered<NotificationsCtrl>()) {
+      Get.delete<NotificationsCtrl>();
+    }
+    controller = Get.put(
+      NotificationsCtrl(openNotificationId: widget.openNotificationId),
+    );
+
+    ever(controller.notificationToOpen, (notification) {
+      if (notification != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showNotificationDetails(notification);
+          controller.notificationToOpen.value = null;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final NotificationsCtrl controller = Get.put(NotificationsCtrl());
-
     return Scaffold(
       backgroundColor: AppColor().primary,
       appBar: AppBar(

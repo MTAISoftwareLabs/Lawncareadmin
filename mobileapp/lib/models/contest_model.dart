@@ -85,29 +85,33 @@ class CompetitionEntry {
 
   factory CompetitionEntry.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>?;
+    final rawId = json['id'];
+    final parsedId = rawId is int
+        ? rawId
+        : int.tryParse(rawId?.toString().replaceFirst('entry_', '') ?? '') ?? 0;
 
     if (user != null) {
       return CompetitionEntry(
-        id: json['id'] ?? 0,
+        id: parsedId,
         userId: json['userId'] ?? user['id'] ?? 0,
         userName: user['name'] ?? 'Anonymous',
         userImage: user['avatar'] ?? '',
-        imageUrl: json['imageUrl'] ?? '',
+        imageUrl: json['imageUrl'] ?? json['image_url'] ?? '',
         caption: json['description'] ?? json['caption'] ?? '',
-        votes: json['votes'] ?? 0,
-        isVotedByMe: json['is_voted_by_me'] ?? json['isVotedByMe'] ?? false,
+        votes: json['votes'] ?? json['voteCount'] ?? json['votes_count'] ?? 0,
+        isVotedByMe: json['is_voted_by_me'] ?? json['isVotedByMe'] ?? json['hasVoted'] ?? json['is_liked_by_me'] ?? false,
       );
     }
 
     return CompetitionEntry(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
+      id: parsedId,
+      userId: json['user_id'] ?? json['userId'] ?? 0,
       userName: json['user_name'] ?? 'Anonymous',
       userImage: json['user_image'] ?? '',
-      imageUrl: json['image_url'] ?? '',
-      caption: json['caption'] ?? '',
-      votes: json['votes'] ?? 0,
-      isVotedByMe: json['is_voted_by_me'] ?? false,
+      imageUrl: json['image_url'] ?? json['imageUrl'] ?? '',
+      caption: json['caption'] ?? json['description'] ?? '',
+      votes: json['votes'] ?? json['voteCount'] ?? json['votes_count'] ?? 0,
+      isVotedByMe: json['is_voted_by_me'] ?? json['isVotedByMe'] ?? json['hasVoted'] ?? json['is_liked_by_me'] ?? false,
     );
   }
 }

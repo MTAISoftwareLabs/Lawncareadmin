@@ -60,9 +60,7 @@ class EditProfileCtrl extends GetxController {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 85,
+        imageQuality: 80,
       );
 
       if (pickedFile != null) {

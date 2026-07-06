@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "128651160740",
+    "project_id": "lawncare-workshop-aj990c",
+    "storage_bucket": "lawncare-workshop-aj990c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128651160740:android:3e6490c13bfbe4bf874a31",
+        "android_client_info": {
+          "package_name": "The.Lawncare.Workshop_2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIf2ABr39KC8P_z6-Xc7JMoC1Ag968MxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128651160740:android:f280c448c64eb081874a31",
+        "android_client_info": {
+          "package_name": "com.example.lawn_care"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIf2ABr39KC8P_z6-Xc7JMoC1Ag968MxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128651160740:android:cee9c1960f23b00a874a31",
+        "android_client_info": {
+          "package_name": "com.mycompany.shopme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIf2ABr39KC8P_z6-Xc7JMoC1Ag968MxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128651160740:android:0fbdcd817bb2b9f7874a31",
+        "android_client_info": {
+          "package_name": "com.turfguyross.lawncareworkshop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIf2ABr39KC8P_z6-Xc7JMoC1Ag968MxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -11,11 +11,6 @@ class BaseClient extends GetConnect implements GetxService {
   void onInit() {
     baseUrl = ApiEndpoints.baseUrl;
 
-    // Be patient with large/slow uploads on weak cellular so the request is
-    // not aborted client-side before it finishes (the main cause of failed
-    // image sends). Images are also downscaled on-device before upload.
-    httpClient.timeout = const Duration(minutes: 5);
-
     httpClient.addRequestModifier<dynamic>((request) {
       final token = _storage.getToken() ?? "";
       if (token.isNotEmpty) {

@@ -39,7 +39,7 @@ class InteractionService extends GetxService {
     String imageUrl,
     String caption,
   ) async {
-    return await _client.postRequest(ApiEndpoints.submitEntry(id as String), {
+    return await _client.postRequest(ApiEndpoints.submitEntry, {
       'imageUrl': imageUrl,
       'caption': caption,
     });

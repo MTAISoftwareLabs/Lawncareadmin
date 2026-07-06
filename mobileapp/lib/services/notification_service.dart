@@ -1,6 +1,3 @@
-import 'dart:ui';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -10,16 +7,17 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:app_badger/app_badger.dart';
+import 'package:lawn_care/controllers/home_ctrls/home_ctrl.dart';
+import 'package:lawn_care/controllers/home_ctrls/landing_navbar_ctrl.dart';
+import 'package:lawn_care/screens/deals/deals_list_screen.dart';
+import 'package:lawn_care/screens/home_screens/calendar_screens/choose_lawn_screen.dart';
 import 'package:lawn_care/screens/home_screens/chat_screens/chat_detail_screen.dart';
+import 'package:lawn_care/screens/home_screens/profile_screens/notifications_screen.dart';
+import 'package:lawn_care/screens/library_screen/lawn_library_screen.dart';
+import 'package:lawn_care/screens/self_diagnosis/self_diagnosis_screen.dart';
 
 import 'api_endpoints.dart';
 import 'base_client.dart';
-
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  print("🔔 [BACKGROUND] Message: ${message.data}");
-}
 
 class NotificationService extends GetxService {
   final BaseClient _client = BaseClient.to;
@@ -28,7 +26,7 @@ class NotificationService extends GetxService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  static Map<String, dynamic>? pendingChatData;
+  static Map<String, dynamic>? pendingNotificationData;
   String? _fcmToken;
 
   Future<Response> getUserNotifications() async =>
@@ -74,9 +72,7 @@ class NotificationService extends GetxService {
   /// 🔢 Update badge count based on unread notifications
   Future<void> _updateBadgeCount() async {
     try {
-      // Check if app badge is supported
-      if (await AppBadger.isBadgeSupported()) {
-        print('⚠️ App badge not supported on this device');
+      if (!await AppBadger.isBadgeSupported()) {
         return;
       }
 
@@ -108,6 +104,9 @@ class NotificationService extends GetxService {
     );
   }
 
+  static const String _androidChannelId = 'lawncare_notifications';
+  static const String _androidChannelName = 'Push Notifications';
+
   Future<void> requestPermissions() async {
     NotificationSettings settings = await _firebaseMessaging.requestPermission(
       alert: true,
@@ -117,6 +116,15 @@ class NotificationService extends GetxService {
 
     print('🔔 [FCM] permission: ${settings.authorizationStatus}');
 
+    if (Platform.isAndroid) {
+      final androidPlugin =
+          _flutterLocalNotificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
+      await androidPlugin?.requestNotificationsPermission();
+    }
+
     final bool? iosGranted = await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>()
@@ -125,8 +133,26 @@ class NotificationService extends GetxService {
     print('🔔 [LOCAL] permission: $iosGranted');
   }
 
+  Future<void> _createNotificationChannel() async {
+    if (!Platform.isAndroid) return;
+
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      _androidChannelId,
+      _androidChannelName,
+      description: 'Push notifications from Lawncare Workshop',
+      importance: Importance.max,
+    );
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(channel);
+  }
+
   Future<NotificationService> init() async {
     await requestPermissions();
+    await _createNotificationChannel();
 
     /// Android settings
     const AndroidInitializationSettings androidSettings =
@@ -154,34 +180,30 @@ class NotificationService extends GetxService {
         if (data != null) {
           // Clear badge when notification is tapped
           clearBadgeCount();
-          _handleChatNavigation(data);
+          _handleNotificationNavigation(data);
         }
       },
     );
 
-    /// iOS Foreground Banner Support
+    /// Foreground banners are shown via flutter_local_notifications so both
+    /// Android and iOS behave the same when the admin sends notification+data.
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-      alert: true,
+      alert: false,
       badge: true,
-      sound: true,
+      sound: false,
     );
 
     tzdata.initializeTimeZones();
 
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    /// Foreground messages
+    /// Foreground messages — always show a banner while the app is open.
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('🔔 [FOREGROUND MSG] data: ${message.data}');
-
-      /// Prevent duplicate notifications
-      if (message.notification == null) {
-        showLocalNotification(message);
-      }
-
-      // Update badge count when new notification arrives
+      showLocalNotification(message);
       _updateBadgeCount();
+      if (Get.isRegistered<HomeCtrl>()) {
+        Get.find<HomeCtrl>().fetchUnreadNotificationCount();
+      }
     });
 
     /// Background notification tap
@@ -189,7 +211,7 @@ class NotificationService extends GetxService {
       print('🔔 [BACKGROUND TAP] data: ${message.data}');
       // Clear badge when notification is tapped
       clearBadgeCount();
-      _handleChatNavigation(message.data);
+      _handleNotificationNavigation(message.data);
     });
 
     /// Terminated state notification
@@ -198,7 +220,7 @@ class NotificationService extends GetxService {
 
     if (initialMessage != null) {
       print('🔔 [TERMINATED TAP] data: ${initialMessage.data}');
-      pendingChatData = initialMessage.data;
+      pendingNotificationData = initialMessage.data;
       // Clear badge when app opens from terminated state
       clearBadgeCount();
     }
@@ -309,24 +331,47 @@ class NotificationService extends GetxService {
     return null;
   }
 
+  /// Handles notification taps from foreground, background, and cold start.
+  ///
+  /// Admin panel sends `actionType` + `actionUrl` in the FCM data payload.
+  /// See docs/push-notification-payload.md for the full mapping.
   static void consumePendingNavigation() {
-    if (pendingChatData != null) {
-      final data = pendingChatData!;
-      pendingChatData = null;
+    if (pendingNotificationData != null) {
+      final data = pendingNotificationData!;
+      pendingNotificationData = null;
 
       Future.delayed(const Duration(milliseconds: 500), () {
-        _handleChatNavigation(data);
+        _handleNotificationNavigation(data);
       });
     }
   }
 
-  static void _handleChatNavigation(Map<String, dynamic> data) {
+  static void _handleNotificationNavigation(Map<String, dynamic> data) {
     print('🔔 [NAVIGATE] $data');
 
     // Clear badge when navigating from notification
     final notificationService = Get.find<NotificationService>();
     notificationService.clearBadgeCount();
 
+    if (_tryNavigateToChat(data)) {
+      return;
+    }
+
+    final String? actionType =
+        _extractString(data, ['actionType', 'action_type'])?.toLowerCase();
+    final String? actionUrl =
+        _extractString(data, ['actionUrl', 'action_url', 'url', 'link']);
+
+    if (actionType != null &&
+        _handleAdminActionType(actionType, actionUrl, data)) {
+      return;
+    }
+
+    _navigateToPushNotifications(data);
+  }
+
+  static bool _tryNavigateToChat(Map<String, dynamic> data) {
+    final String? type = _extractString(data, ['type']);
     final String? chatId = _extractString(data, [
       'chat_id',
       'conversation_id',
@@ -336,6 +381,14 @@ class NotificationService extends GetxService {
       'roomId',
     ]);
 
+    if (chatId == null || chatId.isEmpty) {
+      return false;
+    }
+
+    if (type != null && type != 'chat') {
+      return false;
+    }
+
     final String userName =
         _extractString(data, [
           'user_name',
@@ -344,10 +397,117 @@ class NotificationService extends GetxService {
           'senderName',
         ]) ??
             'User';
+    Get.to(() => ChatDetailScreen(chatId: chatId, userName: userName));
+    return true;
+  }
 
-    if (chatId != null && chatId.isNotEmpty) {
-      Get.to(() => ChatDetailScreen(chatId: chatId, userName: userName));
+  /// Maps admin panel action types to in-app navigation.
+  static bool _handleAdminActionType(
+    String actionType,
+    String? actionUrl,
+    Map<String, dynamic> data,
+  ) {
+    switch (actionType) {
+      case 'link':
+      case 'notifications':
+      case 'notification':
+        _navigateToPushNotifications(data);
+        return true;
+      case 'screen':
+        if (_navigateToAppScreen(actionUrl, data)) {
+          return true;
+        }
+        _navigateToPushNotifications(data);
+        return true;
+      case 'deal':
+        Get.to(() => const DealsListScreen());
+        return true;
+      case 'lesson':
+        Get.to(() => const LawnLibraryScreen());
+        return true;
+      case 'competition':
+        _switchTab(4);
+        return true;
+      default:
+        return false;
     }
+  }
+
+  static void _switchTab(int index) {
+    if (Get.isRegistered<LandingNavbarCtrl>()) {
+      Get.find<LandingNavbarCtrl>().selectedIndex.value = index;
+    }
+  }
+
+  static bool _navigateToAppScreen(String? screen, Map<String, dynamic> data) {
+    final String name = screen?.toLowerCase().trim() ?? '';
+
+    switch (name) {
+      case 'home':
+        _switchTab(0);
+        return true;
+      case 'search':
+        _switchTab(1);
+        return true;
+      case 'forum':
+        _switchTab(2);
+        return true;
+      case 'questions':
+      case 'quiz':
+        _switchTab(3);
+        return true;
+      case 'contest':
+      case 'competition':
+        _switchTab(4);
+        return true;
+      case 'profile':
+        _switchTab(5);
+        return true;
+      case 'notifications':
+      case 'push_notifications':
+      case 'push notifications':
+        _navigateToPushNotifications(data);
+        return true;
+      case 'deals':
+        Get.to(() => const DealsListScreen());
+        return true;
+      case 'lessons':
+      case 'library':
+      case 'lawn_library':
+        Get.to(() => const LawnLibraryScreen());
+        return true;
+      case 'diagnosis':
+      case 'self_diagnosis':
+      case 'self diagnosis':
+        Get.to(() => const SelfDiagnosisScreen());
+        return true;
+      case 'calendar':
+        Get.to(() => const ChooseLawnScreen());
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// Opens Profile → Push Notifications. Pass `notification_id` in [data] to
+  /// auto-open a specific saved notification after the list loads.
+  static void _navigateToPushNotifications(Map<String, dynamic> data) {
+    if (Get.isRegistered<LandingNavbarCtrl>()) {
+      Get.find<LandingNavbarCtrl>().selectedIndex.value = 5;
+    }
+
+    final String? notificationId = _extractString(data, [
+      'notification_id',
+      'notificationId',
+      'id',
+    ]);
+
+    final int? openNotificationId =
+        notificationId != null ? int.tryParse(notificationId) : null;
+
+    Get.to(
+      () => NotificationsScreen(openNotificationId: openNotificationId),
+    );
   }
 
   static String? _extractString(Map<String, dynamic> data, List<String> keys) {
@@ -390,15 +550,16 @@ class NotificationService extends GetxService {
       message.hashCode,
       title ?? "Notification",
       body,
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
+          _androidChannelId,
+          _androidChannelName,
+          channelDescription: 'Push notifications from Lawncare Workshop',
           importance: Importance.max,
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
         ),
-        iOS: DarwinNotificationDetails(
+        iOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
@@ -417,14 +578,15 @@ class NotificationService extends GetxService {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    final details = const NotificationDetails(
+    final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'high_importance_channel',
-        'High Importance Notifications',
+        _androidChannelId,
+        _androidChannelName,
+        channelDescription: 'Push notifications from Lawncare Workshop',
         importance: Importance.max,
         priority: Priority.high,
       ),
-      iOS: DarwinNotificationDetails(),
+      iOS: const DarwinNotificationDetails(),
     );
 
     final tz.TZDateTime scheduled =

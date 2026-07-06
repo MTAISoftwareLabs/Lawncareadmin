@@ -26,19 +26,25 @@ class AiChatCtrl extends GetxController {
       isLoading.value = true;
       final response = await _aiService.sendPrompt(text);
       if (response.statusCode == 200) {
-        final body = response.body;
-        final content = body['choices'][0]['message']['content'] as String;
-        messages.add(
-          ChatMessage(
-            content: content,
-            isUser: false,
-            timestamp: DateTime.now(),
-          ),
-        );
+        final content = _aiService.extractContent(response.body);
+        if (content != null && content.isNotEmpty) {
+          messages.add(
+            ChatMessage(
+              content: content,
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
+        } else {
+          Get.snackbar("Error", "Failed to get AI response");
+        }
       } else {
+        final error = response.body is Map
+            ? (response.body['error'] ?? response.body['message'] ?? 'Unknown error')
+            : 'Unknown error';
         Get.snackbar(
           "Error",
-          "Failed to get AI response: ${response.statusCode}",
+          "Failed to get AI response: ${response.statusCode} ($error)",
         );
       }
     } catch (e) {

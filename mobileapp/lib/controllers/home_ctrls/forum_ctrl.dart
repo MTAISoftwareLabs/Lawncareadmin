@@ -21,12 +21,7 @@ class ForumCtrl extends GetxController {
 
   Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      imageQuality: 85,
-    );
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       selectedImage.value = File(image.path);
       await _uploadSelectedImage();
@@ -111,7 +106,7 @@ class ForumCtrl extends GetxController {
       final response = await aiService.refineText(commentController.text);
 
       if (response.statusCode == 200) {
-        final refinedText = response.body['choices'][0]['message']['content'];
+        final refinedText = aiService.extractContent(response.body);
         if (refinedText != null && refinedText.isNotEmpty) {
           commentController.text = refinedText.trim();
           Get.snackbar("Success", "Text refined successfully!");

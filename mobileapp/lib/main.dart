@@ -27,7 +27,7 @@ Future<void> main() async {
 
   /// 🔥 Initialize Firebase
   await Firebase.initializeApp(
-   // options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   /// 🔔 Register background message handler
@@ -42,13 +42,6 @@ Future<void> main() async {
   );
 
   debugPrint("🔔 Notification Permission: ${settings.authorizationStatus}");
-
-  /// 🔔 Allow foreground notifications on iOS
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
 
   /// 📱 Get FCM Token with retry logic for iOS
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {

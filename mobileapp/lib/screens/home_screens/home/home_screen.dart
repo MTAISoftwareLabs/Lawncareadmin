@@ -18,6 +18,7 @@ import 'package:lawn_care/screens/home_screens/ai_chat_screen.dart';
 import 'package:lawn_care/widgets/weather_banner.dart';
 import 'package:lawn_care/widgets/soil_temp_banner.dart';
 import 'package:lawn_care/screens/home_screens/weed_id_screen.dart';
+import 'package:lawn_care/screens/home_screens/profile_screens/notifications_screen.dart';
 import 'package:lawn_care/services/storage_service.dart';
 import 'package:lawn_care/widgets/guest_login_dialog.dart';
 
@@ -52,13 +53,25 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Welcome,${profilecontroller.userName.value}',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: AppColor().primaryText,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Welcome, ${profilecontroller.userName.value}',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: AppColor().primaryText,
+                        ),
+                      ),
+                    ),
+                    Obx(
+                      () => _buildNotificationButton(
+                        unreadCount: controller.unreadNotificationCount.value,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 15),
                 SizedBox(
@@ -310,6 +323,39 @@ class HomeScreen extends StatelessWidget {
         }),
       ),
     );
+  }
+
+  Widget _buildNotificationButton({required int unreadCount}) {
+    return IconButton(
+      onPressed: _openNotifications,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      icon: Badge(
+        isLabelVisible: unreadCount > 0,
+        label: Text(
+          unreadCount > 99 ? '99+' : '$unreadCount',
+          style: const TextStyle(fontSize: 10),
+        ),
+        backgroundColor: AppColor().sedaryBackground,
+        child: Icon(
+          Icons.notifications_none,
+          color: AppColor().secondary,
+          size: 30,
+        ),
+      ),
+    );
+  }
+
+  void _openNotifications() {
+    final StorageService storage = Get.find<StorageService>();
+    if (storage.isGuest()) {
+      GuestLoginDialog.show();
+      return;
+    }
+
+    Get.to(() => const NotificationsScreen())?.then((_) {
+      controller.fetchUnreadNotificationCount();
+    });
   }
 
   Widget _buildBannerFallback(String title) {

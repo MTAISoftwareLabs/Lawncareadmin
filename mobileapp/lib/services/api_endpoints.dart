@@ -50,14 +50,19 @@ class ApiEndpoints {
   static const String expertQuestions = 'expert-questions';
   static const String myQuestions = 'expert-questions/my';
 
-  // Competitions
+  // Competitions (canonical)
   static const String competitions = 'competitions';
-  static const String activeCompetition = 'competitions';
-  static const String competitionWinners = 'contest/winners';
+  static const String activeCompetition = 'competitions/active';
+  static const String competitionWinners = 'competitions/winners';
   static String competitionDetail(int id) => 'competitions/$id';
-  static String submitEntry(String id) => 'contest/entries';
-  static const String currentEntries = 'contest/entries';
-  static String voteEntry(String id) => 'entries/$id/vote';
+  static const String submitEntry = 'competitions/active/entries';
+  static const String currentEntries = 'competitions/active/entries';
+  static String voteEntry(String id) => 'competitions/entries/$id/vote';
+
+  // Legacy contest aliases (still supported on server)
+  static const String legacyContestWinners = 'contest/winners';
+  static const String legacySubmitEntry = 'contest/entries';
+  static const String legacyCurrentEntries = 'contest/entries';
 
   // Lessons
   static const String lessons = 'lessons';
@@ -124,6 +129,10 @@ class ApiEndpoints {
   static String chatMessages(dynamic id) => 'chats/$id/messages';
   static String deleteMessage(dynamic id) => 'chats/messages/$id';
   static const String supportStartChat = 'support/start-chat';
+
+  // AI
+  static const String aiChat = 'ai/chat';
+  static const String aiRefine = 'ai/refine';
 
   // Media Upload
   static const String uploadMedia = 'upload/media';

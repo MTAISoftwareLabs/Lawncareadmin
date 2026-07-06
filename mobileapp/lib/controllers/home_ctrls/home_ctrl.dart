@@ -15,9 +15,12 @@ import 'package:lawn_care/models/soil_temp_model.dart';
 import 'package:lawn_care/services/soil_temp_service.dart';
 
 import 'package:lawn_care/data/self_diagnosis_data.dart';
+import 'package:lawn_care/services/notification_service.dart';
 
 class HomeCtrl extends GetxController {
   final ContentService _contentService = Get.find<ContentService>();
+  final NotificationService _notificationService =
+      Get.find<NotificationService>();
   final WeatherService _weatherService = Get.put(WeatherService());
   final SoilTempService _soilTempService = Get.put(SoilTempService());
 
@@ -35,6 +38,7 @@ class HomeCtrl extends GetxController {
   RxList<DealModel> newDeals = <DealModel>[].obs;
   RxList<LibraryItem> deals = <LibraryItem>[].obs;
   RxBool isDealsLoading = false.obs;
+  RxInt unreadNotificationCount = 0.obs;
 
   late PageController pageController;
   Timer? autoSlideTimer;
@@ -47,7 +51,19 @@ class HomeCtrl extends GetxController {
     fetchHomeData();
     fetchLocationAndWeatherData();
     fetchDeals();
+    fetchUnreadNotificationCount();
     startAutoSlide();
+  }
+
+  Future<void> fetchUnreadNotificationCount() async {
+    try {
+      final response = await _notificationService.getUserNotifications();
+      if (response.isOk && response.body != null) {
+        unreadNotificationCount.value = response.body['unread_count'] ?? 0;
+      }
+    } catch (e) {
+      debugPrint("HomeCtrl.fetchUnreadNotificationCount error: $e");
+    }
   }
 
   Future<void> fetchDeals() async {

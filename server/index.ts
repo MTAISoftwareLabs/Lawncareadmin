@@ -10,6 +10,7 @@ import { WebhookHandlers } from './webhookHandlers';
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { isLocalStorageMode, registerLocalObjectStorageRoutes } from "./localObjectStorage";
 import { runSchemaMigrations } from "./dbMigrations";
+import { syncPlaceholderVideoLessons, ensureWeatherApiKey } from "./contentSync";
 import { db } from "./db";
 import { users } from "../shared/schema";
 import { eq, and } from "drizzle-orm";
@@ -335,6 +336,8 @@ async function runBackgroundInit() {
     // Seed database on startup (idempotent - only seeds if empty)
     await seedDatabaseIfEmpty();
     await ensureSubscriptionPlans();
+    await syncPlaceholderVideoLessons();
+    await ensureWeatherApiKey();
     
     // Ensure admin user name is "Admin"
     try {

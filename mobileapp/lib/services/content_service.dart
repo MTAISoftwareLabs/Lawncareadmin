@@ -78,7 +78,7 @@ class ContentService extends GetxService {
     String caption,
   ) async {
     return await _client.postRequest(
-      ApiEndpoints.submitEntry(id),
+      ApiEndpoints.submitEntry,
       {'title': caption, 'description': caption, 'imageUrl': imageUrl},
       headers: {'X-Skip-Error': 'true'},
     );

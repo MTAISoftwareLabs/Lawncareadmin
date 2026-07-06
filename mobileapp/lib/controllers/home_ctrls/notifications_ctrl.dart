@@ -3,11 +3,15 @@ import 'package:lawn_care/models/notification_model.dart';
 import 'package:lawn_care/services/notification_service.dart';
 
 class NotificationsCtrl extends GetxController {
+  NotificationsCtrl({this.openNotificationId});
+
+  final int? openNotificationId;
   final NotificationService _notificationService =
       Get.find<NotificationService>();
   final RxBool isEnabled = true.obs;
   final RxBool isLoading = false.obs;
   final RxList<NotificationModel> notificationsList = <NotificationModel>[].obs;
+  final Rxn<NotificationModel> notificationToOpen = Rxn<NotificationModel>();
 
   @override
   void onInit() {
@@ -24,11 +28,25 @@ class NotificationsCtrl extends GetxController {
         notificationsList.value = data
             .map((json) => NotificationModel.fromJson(json))
             .toList();
+        _queueNotificationToOpen();
       }
     } catch (e) {
       print("Error fetching notifications: $e");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void _queueNotificationToOpen() {
+    if (openNotificationId == null || notificationToOpen.value != null) {
+      return;
+    }
+
+    for (final notification in notificationsList) {
+      if (notification.id == openNotificationId) {
+        notificationToOpen.value = notification;
+        return;
+      }
     }
   }
 

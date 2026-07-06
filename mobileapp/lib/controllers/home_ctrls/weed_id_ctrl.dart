@@ -12,12 +12,7 @@ class WeedIdCtrl extends GetxController {
 
   Future<void> pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: source,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      imageQuality: 85,
-    );
+    final XFile? image = await picker.pickImage(source: source);
 
     if (image != null) {
       selectedImage.value = File(image.path);

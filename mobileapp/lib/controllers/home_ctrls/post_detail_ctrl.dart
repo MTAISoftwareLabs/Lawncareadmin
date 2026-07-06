@@ -35,7 +35,7 @@ class PostDetailCtrl extends GetxController {
       final response = await aiService.refineText(commentController.text);
 
       if (response.statusCode == 200) {
-        final refinedText = response.body['choices'][0]['message']['content'];
+        final refinedText = aiService.extractContent(response.body);
         if (refinedText != null && refinedText.isNotEmpty) {
           commentController.text = refinedText.trim();
           Get.snackbar("Success", "Text refined successfully!");

@@ -1,0 +1,4 @@
+storePassword=makkiijaz121@
+keyPassword=makkiijaz
+keyAlias=upload
+storeFile=../app/upload-keystore.jks
