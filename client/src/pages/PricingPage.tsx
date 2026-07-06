@@ -363,13 +363,6 @@ export default function PricingPage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold">How does the free trial work?</h3>
-                <p className="text-sm text-muted-foreground">
-                  Stripe checkout starts a 7-day trial with full premium access. You will not be charged until the trial
-                  ends, and you can cancel anytime from the billing portal.
-                </p>
-              </div>
-              <div>
                 <h3 className="font-semibold">How do I cancel?</h3>
                 <p className="text-sm text-muted-foreground">
                   Premium members can open the Stripe billing portal from this page or from profile settings in the member
