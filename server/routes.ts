@@ -5058,6 +5058,58 @@ router.delete("/api/admin/calendars/:id", authMiddleware, adminMiddleware, async
   }
 });
 
+// ==================== ADMIN - CALENDAR EVENTS MANAGEMENT ====================
+
+router.get("/api/admin/calendars/:calendarId/events", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const calendarId = parseInt(req.params.calendarId);
+    const events = await db.select().from(calendarEvents)
+      .where(eq(calendarEvents.calendarId, calendarId))
+      .orderBy(asc(calendarEvents.displayOrder));
+    res.json({ success: true, data: events });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to fetch events" });
+  }
+});
+
+router.post("/api/admin/calendars/:calendarId/events", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const calendarId = parseInt(req.params.calendarId);
+    const { header, feature, eventDate, imageUrl, displayOrder } = req.body;
+    if (!header || !eventDate) return res.status(400).json({ success: false, error: "header and eventDate are required" });
+    const [event] = await db.insert(calendarEvents).values({
+      calendarId, header, feature, eventDate, imageUrl, displayOrder: displayOrder ?? 0
+    }).returning();
+    res.json({ success: true, data: event });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to create event" });
+  }
+});
+
+router.put("/api/admin/calendars/:calendarId/events/:eventId", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.eventId);
+    const { header, feature, eventDate, imageUrl, displayOrder, isActive } = req.body;
+    const [event] = await db.update(calendarEvents).set({
+      header, feature, eventDate, imageUrl, displayOrder, isActive
+    }).where(eq(calendarEvents.id, eventId)).returning();
+    if (!event) return res.status(404).json({ success: false, error: "Event not found" });
+    res.json({ success: true, data: event });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to update event" });
+  }
+});
+
+router.delete("/api/admin/calendars/:calendarId/events/:eventId", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.eventId);
+    await db.delete(calendarEvents).where(eq(calendarEvents.id, eventId));
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to delete event" });
+  }
+});
+
 // ==================== ADMIN - SELF DIAGNOSIS MANAGEMENT ====================
 
 router.get("/api/admin/self-diagnosis", authMiddleware, adminMiddleware, async (req, res) => {
