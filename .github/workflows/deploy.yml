@@ -49,5 +49,8 @@ jobs:
             rm -f release.tar.gz
             npm ci
             npm run build
+            set -a; source .env; set +a
+            npm run db:push
             pm2 restart thelawncareworkshop || pm2 restart lawncare
             pm2 status
+            curl -sf http://127.0.0.1:3000/health

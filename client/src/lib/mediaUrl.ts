@@ -20,8 +20,26 @@ export function resolveMediaUrl(url?: string | null): string | null {
 }
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v|avi|mkv|wmv|flv)(\?.*)?$/i;
+const IMAGE_EXT = /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)(\?.*)?$/i;
 
 export function isVideoUrl(url?: string | null): boolean {
   if (!url) return false;
   return VIDEO_EXT.test(url) || url.includes("/objects/") && VIDEO_EXT.test(url);
+}
+
+export function isImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+  return IMAGE_EXT.test(url);
+}
+
+/** External link for articles/products — never treat image media URLs as links. */
+export function getExternalContentLink(
+  productLink?: string | null,
+  mediaUrl?: string | null,
+): string | null {
+  const candidates = [productLink, mediaUrl]
+    .map((url) => resolveMediaUrl(url))
+    .filter((url): url is string => Boolean(url));
+
+  return candidates.find((url) => !isImageUrl(url) && !isVideoUrl(url)) ?? null;
 }

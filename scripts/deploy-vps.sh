@@ -17,6 +17,6 @@ tar czf - \
   vite.config.ts tsconfig.json tsconfig.node.json \
   drizzle.config.ts postcss.config.js tailwind.config.ts \
   attached_assets 2>/dev/null \
-| ssh "$TARGET" "mkdir -p $APP_DIR && cd $APP_DIR && tar xzf - && npm ci && npm run build && (pm2 restart thelawncareworkshop || pm2 restart lawncare) && pm2 status"
+| ssh "$TARGET" "mkdir -p $APP_DIR && cd $APP_DIR && tar xzf - && npm ci && npm run build && set -a && source .env && set +a && npm run db:push && (pm2 restart thelawncareworkshop || pm2 restart lawncare) && pm2 status && curl -sf http://127.0.0.1:3000/health"
 
 echo "==> Done — check https://thelawncareworkshop.com/health"

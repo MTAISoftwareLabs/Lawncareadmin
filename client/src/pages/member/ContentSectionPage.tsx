@@ -24,7 +24,8 @@ import {
 import { ArrowLeft, Bookmark, ExternalLink, Play, Search } from "lucide-react";
 import { AppImage } from "@/components/media/AppImage";
 import { VideoPlayerDialog } from "@/components/media/VideoPlayerDialog";
-import { isVideoUrl, resolveMediaUrl } from "@/lib/mediaUrl";
+import { ContentItemDetailDialog } from "@/components/member/ContentItemDetailDialog";
+import { getExternalContentLink, isVideoUrl, resolveMediaUrl } from "@/lib/mediaUrl";
 
 const VALID_SECTIONS = new Set(Object.keys(SECTION_LABELS));
 
@@ -152,7 +153,6 @@ function ContentSectionInner() {
               <ContentCard
                 key={item.id}
                 item={item}
-                section={section}
                 saved={isSaved(item.id)}
                 onToggleSave={() => toggleSave(item, section)}
                 onPlayVideo={(url, title) => setPlayingVideo({ url, title })}
@@ -174,73 +174,83 @@ function ContentSectionInner() {
 
 function ContentCard({
   item,
-  section,
   saved,
   onToggleSave,
   onPlayVideo,
 }: {
   item: HomeContentItem;
-  section: string;
   saved: boolean;
   onToggleSave: () => void;
   onPlayVideo: (url: string, title: string) => void;
 }) {
+  const [detailOpen, setDetailOpen] = useState(false);
   const image = item.thumbnail_url || item.media_url;
   const isVideo = item.type === "video" || item.id.startsWith("vid_");
   const mediaUrl = resolveMediaUrl(item.media_url);
   const canPlayInApp = isVideo || isVideoUrl(mediaUrl);
-  const link = canPlayInApp ? (item.product_link || item.media_url) : item.product_link;
+  const externalLink = getExternalContentLink(item.product_link, item.media_url);
+  const isProduct = item.type === "product";
 
   const handleOpen = () => {
     if (canPlayInApp && mediaUrl) {
       onPlayVideo(mediaUrl, item.name);
       return;
     }
-    if (link) {
-      window.open(resolveMediaUrl(link) ?? link, "_blank", "noopener,noreferrer");
+    if (isProduct && externalLink) {
+      window.open(externalLink, "_blank", "noopener,noreferrer");
+      return;
     }
+    setDetailOpen(true);
   };
 
+  const openLabel = canPlayInApp ? "Watch" : isProduct && externalLink ? "View Product" : "Open";
+
   return (
-    <Card className="overflow-hidden">
-      <button type="button" className="block w-full text-left" onClick={canPlayInApp ? handleOpen : undefined}>
-        {image ? (
-          <AppImage src={image} alt={item.name} className="h-44 w-full object-cover" />
-        ) : (
-          <div className="flex h-44 items-center justify-center bg-green-50 dark:bg-green-950">
-            <Play className="h-10 w-10 text-green-600" />
+    <>
+      <Card className="overflow-hidden">
+        <button type="button" className="block w-full text-left" onClick={handleOpen}>
+          {image ? (
+            <AppImage src={image} alt={item.name} className="h-44 w-full object-cover" />
+          ) : (
+            <div className="flex h-44 items-center justify-center bg-green-50 dark:bg-green-950">
+              <Play className="h-10 w-10 text-green-600" />
+            </div>
+          )}
+        </button>
+        <CardContent className="space-y-3 p-4">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="line-clamp-2 font-semibold">{item.name}</h3>
+            <Badge variant="outline" className="shrink-0 text-[10px] capitalize">
+              {item.type}
+            </Badge>
           </div>
-        )}
-      </button>
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 font-semibold">{item.name}</h3>
-          <Badge variant="outline" className="shrink-0 text-[10px] capitalize">
-            {item.type}
-          </Badge>
-        </div>
-        {item.description && (
-          <p className="line-clamp-3 text-sm text-muted-foreground">{item.description}</p>
-        )}
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant={saved ? "default" : "outline"}
-            className="flex-1"
-            onClick={onToggleSave}
-          >
-            <Bookmark className={`mr-1 h-4 w-4 ${saved ? "fill-current" : ""}`} />
-            {saved ? "Saved" : "Save"}
-          </Button>
-          {link && (
+          {item.description && (
+            <p className="line-clamp-3 text-sm text-muted-foreground">{item.description}</p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant={saved ? "default" : "outline"}
+              className="flex-1"
+              onClick={onToggleSave}
+            >
+              <Bookmark className={`mr-1 h-4 w-4 ${saved ? "fill-current" : ""}`} />
+              {saved ? "Saved" : "Save"}
+            </Button>
             <Button size="sm" className="flex-1" onClick={handleOpen}>
-              {canPlayInApp ? "Watch" : "Open"}
+              {openLabel}
               {!canPlayInApp && <ExternalLink className="ml-2 h-4 w-4" />}
             </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <ContentItemDetailDialog
+        item={item}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
+    </>
   );
 }
 

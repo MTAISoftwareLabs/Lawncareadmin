@@ -262,7 +262,7 @@ export function HomePage() {
                       <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white">Log In</Button>
                     </Link>
                     <Link href="/signup">
-                      <Button className="bg-white text-green-800 hover:bg-white/90">Start Free Trial</Button>
+                      <Button className="bg-white text-green-800 hover:bg-white/90">Subscribe</Button>
                     </Link>
                   </div>
                 )}
@@ -301,7 +301,7 @@ export function HomePage() {
                           <Button variant="outline" className={`w-full ${heroButtonOutline}`}>Log In</Button>
                         </Link>
                         <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                          <Button className="w-full bg-white text-green-800 hover:bg-white/90">Start Free Trial</Button>
+                          <Button className="w-full bg-white text-green-800 hover:bg-white/90">Subscribe</Button>
                         </Link>
                       </>
                     )}
@@ -367,7 +367,7 @@ export function HomePage() {
         <div className="container mx-auto px-4">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Simple, Transparent Pricing</h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">Start with a free trial. Subscribe on web or in the app.</p>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">Subscribe on web or in the mobile app.</p>
           </div>
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
             <Card className="h-full border-border">
@@ -390,7 +390,7 @@ export function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup"><Button variant="outline" className="w-full">Start Free Trial</Button></Link>
+                <Link href="/signup"><Button variant="outline" className="w-full">Subscribe</Button></Link>
               </CardContent>
             </Card>
 
@@ -418,7 +418,7 @@ export function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/signup?plan=yearly"><Button className="w-full">Start Free Trial</Button></Link>
+                <Link href="/signup?plan=yearly"><Button className="w-full">Subscribe</Button></Link>
               </CardContent>
             </Card>
           </div>

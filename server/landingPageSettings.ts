@@ -33,7 +33,7 @@ export function formatLandingPageSettings(row: Partial<SiteSettings> | null | un
       "Professional lawn care guidance from TurfguyRoss, a golf course superintendent with 30+ years of experience.",
     heroImage: row?.heroImage || null,
     heroImage2: row?.heroImage2 || null,
-    heroButtonText: row?.heroButtonText || "Start Your 7-Day Free Trial",
+    heroButtonText: row?.heroButtonText || "Subscribe",
     heroBadgeText: row?.heroBadgeText || "Built for Cool-Season Lawns",
     primaryColor: row?.primaryColor || "#22c55e",
     monthlyPrice: row?.monthlyPrice?.toString() || "9.99",

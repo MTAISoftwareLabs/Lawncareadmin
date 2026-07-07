@@ -153,8 +153,11 @@ export function registerLocalObjectStorageRoutes(app: Express): void {
     }
   );
 
-  // Step 3: serve uploaded objects
-  app.get(/^\/objects\/(.*)/, async (req: Request, res: Response) => {
+  // Step 3: serve uploaded objects.
+  // Supports HTTP Range requests (206 Partial Content) so that <video> streaming
+  // and seeking work correctly — iOS Safari in particular refuses to play a
+  // video unless the server advertises `Accept-Ranges` and honors range requests.
+  const serveObject = async (req: Request, res: Response) => {
     try {
       const objectPath = `/objects/${(req.params as any)[0]}`;
       const disk = objectPathToDiskPath(objectPath);
@@ -203,16 +206,79 @@ export function registerLocalObjectStorageRoutes(app: Express): void {
           ".odp": "application/vnd.oasis.opendocument.presentation",
         } as Record<string, string>)[ext] || "application/octet-stream";
 
+      const totalSize = stat.size;
+
       res.setHeader("Content-Type", contentType);
       res.setHeader("X-Content-Type-Options", "nosniff");
-      res.setHeader("Content-Length", String(stat.size));
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Last-Modified", stat.mtime.toUTCString());
+
+      // HEAD request: headers only, no body.
+      if (req.method === "HEAD") {
+        res.setHeader("Content-Length", String(totalSize));
+        return res.status(200).end();
+      }
+
+      const rangeHeader = req.headers.range;
+      if (rangeHeader) {
+        // Only support a single `bytes=start-end` range.
+        const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
+        if (match) {
+          const startStr = match[1];
+          const endStr = match[2];
+          let start: number;
+          let end: number;
+
+          if (startStr === "") {
+            // Suffix range: last N bytes.
+            const suffixLength = parseInt(endStr, 10);
+            if (Number.isNaN(suffixLength) || suffixLength <= 0) {
+              res.setHeader("Content-Range", `bytes */${totalSize}`);
+              return res.status(416).end();
+            }
+            start = Math.max(totalSize - suffixLength, 0);
+            end = totalSize - 1;
+          } else {
+            start = parseInt(startStr, 10);
+            end = endStr === "" ? totalSize - 1 : parseInt(endStr, 10);
+          }
+
+          if (
+            Number.isNaN(start) ||
+            Number.isNaN(end) ||
+            start > end ||
+            start >= totalSize
+          ) {
+            res.setHeader("Content-Range", `bytes */${totalSize}`);
+            return res.status(416).end();
+          }
+
+          end = Math.min(end, totalSize - 1);
+          const chunkSize = end - start + 1;
+
+          res.status(206);
+          res.setHeader("Content-Range", `bytes ${start}-${end}/${totalSize}`);
+          res.setHeader("Content-Length", String(chunkSize));
+          createReadStream(disk, { start, end }).pipe(res);
+          return;
+        }
+      }
+
+      res.setHeader("Content-Length", String(totalSize));
       createReadStream(disk).pipe(res);
     } catch (err) {
       console.error("[local-storage] serve error:", err);
-      res.status(500).json({ error: "Failed to serve object" });
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to serve object" });
+      } else {
+        res.end();
+      }
     }
-  });
+  };
+
+  app.get(/^\/objects\/(.*)/, serveObject);
+  app.head(/^\/objects\/(.*)/, serveObject);
 
   console.log(`📁 Local object storage enabled at ${STORAGE_DIR}`);
 }

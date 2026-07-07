@@ -7,13 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { VideoPlayerDialog } from "@/components/media/VideoPlayerDialog";
+import { ContentItemDetailDialog } from "@/components/member/ContentItemDetailDialog";
 import { AppImage } from "@/components/media/AppImage";
-import { isVideoUrl, resolveMediaUrl } from "@/lib/mediaUrl";
+import { getExternalContentLink, isVideoUrl, resolveMediaUrl } from "@/lib/mediaUrl";
+import type { HomeContentItem } from "@/lib/memberHome";
 import { Bookmark, ExternalLink, Play } from "lucide-react";
 
 function SavedItemsContent() {
   const { items, remove } = useSavedItems();
   const [playingVideo, setPlayingVideo] = useState<{ url: string; title: string } | null>(null);
+  const [detailItem, setDetailItem] = useState<HomeContentItem | null>(null);
 
   const openItem = (item: (typeof items)[number]) => {
     const mediaUrl = resolveMediaUrl(item.media_url);
@@ -21,10 +24,12 @@ function SavedItemsContent() {
       setPlayingVideo({ url: mediaUrl, title: item.name });
       return;
     }
-    const link = resolveMediaUrl(item.product_link || item.media_url);
-    if (link) {
-      window.open(link, "_blank", "noopener,noreferrer");
+    const externalLink = getExternalContentLink(item.product_link, item.media_url);
+    if (item.type === "product" && externalLink) {
+      window.open(externalLink, "_blank", "noopener,noreferrer");
+      return;
     }
+    setDetailItem(item);
   };
 
   return (
@@ -79,21 +84,19 @@ function SavedItemsContent() {
                           </p>
                         )}
                         <div className="mt-3 flex gap-2">
-                          {(item.product_link || item.media_url) && (
-                            <Button size="sm" variant="outline" onClick={() => openItem(item)}>
-                              {canPlay ? (
-                                <>
-                                  <Play className="mr-1 h-3 w-3" />
-                                  Watch
-                                </>
-                              ) : (
-                                <>
-                                  Open
-                                  <ExternalLink className="ml-1 h-3 w-3" />
-                                </>
-                              )}
-                            </Button>
-                          )}
+                          <Button size="sm" variant="outline" onClick={() => openItem(item)}>
+                            {canPlay ? (
+                              <>
+                                <Play className="mr-1 h-3 w-3" />
+                                Watch
+                              </>
+                            ) : (
+                              <>
+                                Open
+                                <ExternalLink className="ml-1 h-3 w-3" />
+                              </>
+                            )}
+                          </Button>
                           <Button size="sm" variant="ghost" onClick={() => remove(item.id)}>
                             Remove
                           </Button>
@@ -113,6 +116,12 @@ function SavedItemsContent() {
         onOpenChange={(open) => !open && setPlayingVideo(null)}
         videoUrl={playingVideo?.url}
         title={playingVideo?.title}
+      />
+
+      <ContentItemDetailDialog
+        item={detailItem}
+        open={!!detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
       />
     </MemberLayout>
   );
